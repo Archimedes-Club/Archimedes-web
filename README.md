@@ -5,6 +5,7 @@
 The Archimedes Web Portal is designed for the Archimedes Club at Northeastern University, serving all its branches. This platform fosters collaboration between professors and students, enabling them to work together on innovative project ideas.
 
 **User Roles**
+
 The portal defines four types of users:
 - Professor (Admin) – Manages the portal, reviews project proposals, and oversees activities.
 - Professor (Project Lead) – Creates and leads projects, managing student participation.
@@ -23,11 +24,15 @@ The portal defines four types of users:
 This portal serves as a centralized hub for academic collaboration, streamlining project management and fostering research engagement across the university.
 
 **Author of the Project**
+
 Lopez Plascencia, Fernando Augusto - f.lpezplascencia@northeastern.edu 
+
 Sohni Rais - rais.s@northeastern.edu
+
 Abhinav Eeranti- eeranti.a@northeastern.edu 
 
 **How to set up project locally**
+
 Steps to initialize project:
 Once you clone the archimedes-web repository, you must have the following prerequisites to get the application running:
 

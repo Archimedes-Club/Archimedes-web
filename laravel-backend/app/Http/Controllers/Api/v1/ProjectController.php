@@ -48,6 +48,7 @@ class ProjectController extends Controller
     {
         //
         $project->update($request->all());
+        return new ProjectResource($project);
     }
 
     /**

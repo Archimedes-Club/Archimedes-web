@@ -6,5 +6,4 @@ export interface Project {
   team_size: number;
   category: string;
   team_lead: string;
-  
 }

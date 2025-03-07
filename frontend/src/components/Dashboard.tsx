@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import ProjectTable from "./ProjectTable";
 import { Project } from "../types/projects";
 import "../App.css";
-import { Rss } from "lucide-react";
+// import { Rss } from "lucide-react";
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -46,6 +46,7 @@ const Dashboard: React.FC = () => {
     if (
       !newProject.title.trim() ||
       !newProject.description.trim() ||
+      !newProject.category.trim() ||
       !newProject.status.trim() ||
       newProject.team_size <= 0
     ) {
@@ -53,13 +54,13 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      
-      // newProject.category = "Web";
-      newProject.team_lead = "Abhianv";
       console.log("Creating project:", JSON.stringify(newProject));
       const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify(newProject),
       });
 
@@ -67,19 +68,19 @@ const Dashboard: React.FC = () => {
         // Parse the response error body if available
         const errorData = await response.json();
         console.error("Server Error:", errorData);
-        alert(`Server Error: `+errorData.message);
-  
+        alert(`Server Error: ` + errorData.message);
+
         if (response.status === 422) {
           console.error("Validation Errors:", errorData.errors);
         } else {
           console.error("Unexpected Error:", errorData.message);
         }
-  
+
         return; // Stop execution if there is an error
       }
 
       const createdProject = await response.json();
-      setProjects([...projects, createdProject]);
+      setProjects([...projects, createdProject.data]);
       setNewProject({
         title: "",
         description: "",
@@ -97,12 +98,15 @@ const Dashboard: React.FC = () => {
   // Delete a project
   const deleteProject = async (id: number) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/projects/${id}`, { method: "DELETE" });
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/projects/${id}`,
+        { method: "DELETE" }
+      );
 
-      if (!response.ok){
+      if (!response.ok) {
         const error = await response.json();
         console.error("server error", error);
-      }else{
+      } else {
         const message = await response.json();
         alert(message.message);
       }
@@ -124,11 +128,14 @@ const Dashboard: React.FC = () => {
     if (editingProject) {
       console.log(JSON.stringify(editingProject));
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingProject),
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(editingProject),
+          }
+        );
 
         const jsonResponse = await response.json();
         const updatedProject = jsonResponse.data;
@@ -174,8 +181,7 @@ const Dashboard: React.FC = () => {
           />
         </main>
       ) : (
-
-        // CREATE PROJECT FORM 
+        // CREATE PROJECT FORM
         <main className="create-project-page">
           <h2 className="breadcrumb">
             Dashboard / {isEditPageOpen ? "Edit Project" : "Create Project"}
@@ -272,6 +278,51 @@ const Dashboard: React.FC = () => {
                 <option value="Ongoing">Ongoing</option>
                 <option value="Hiring">Hiring</option>
               </select>
+              <label>Category</label>
+              <select
+                className="input-field"
+                value={
+                  isEditPageOpen && editingProject
+                    ? editingProject.category
+                    : newProject.category
+                }
+                onChange={(e) =>
+                  isEditPageOpen && editingProject
+                    ? setEditingProject({
+                        ...editingProject,
+                        category: e.target.value,
+                      })
+                    : setNewProject({ ...newProject, category: e.target.value })
+                }
+              >
+                <option value="">Select Project Category</option>
+                <option value="Web">Web</option>
+                <option value="Research">Research</option>
+                <option value="AI/ML">AI/ML</option>
+                <option value="IoT">IoT</option>
+              </select>
+              <label>Team Lead</label>
+              <input
+                type="text"
+                placeholder="Enter Team Lead"
+                value={
+                  isEditPageOpen && editingProject
+                    ? editingProject.team_lead
+                    : newProject.team_lead
+                }
+                onChange={(e) =>
+                  isEditPageOpen && editingProject
+                    ? setEditingProject({
+                        ...editingProject,
+                        team_lead: e.target.value,
+                      })
+                    : setNewProject({
+                        ...newProject,
+                        team_lead: e.target.value,
+                      })
+                }
+                className="input-field"
+              />
               <div className="form-buttons">
                 <button type="submit" className="create-btn">
                   {isEditPageOpen ? "Update Project" : "Create Project"}

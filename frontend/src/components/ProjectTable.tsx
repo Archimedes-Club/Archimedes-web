@@ -29,8 +29,10 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
           {projects.map((project) => (
             <tr key={project.id}>
               <td>{project.title}</td>
+              <td>{project.description}</td>
+              <td>{project.category}</td>
+              <td>{project.team_lead}</td>
               <td>{project.status}</td>
-
               <td>{project.team_size}</td>
               <td>
                 <button className="edit-btn" onClick={() => onEdit(project)}>

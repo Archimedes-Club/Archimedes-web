@@ -72,7 +72,7 @@ c. To test the whole application: Run the command “npm run start-frontend-back
 
 **Link of all the tech spec, uml diagram, product spec, Api definition document, use cases, user stories**
 
-1. **Tech Specification Document** - https://docs.google.com/document/d/1Ys5QWI5XXT6gRgHjWcOwVNO7R5ICWT-3/edit?usp=share_link&ouid=101694166166288235946&rtpof=true&sd=true 
+1. **Tech Specification Document** - https://docs.google.com/document/d/1om3Gs1K8XgMW8015W4ZbiCGNbdBwWmAV/edit?usp=share_link&ouid=101694166166288235946&rtpof=true&sd=true
 2. **Product Spec Document** - https://docs.google.com/document/d/1Ys5QWI5XXT6gRgHjWcOwVNO7R5ICWT-3/edit?usp=share_link&ouid=101694166166288235946&rtpof=true&sd=true 
 3. **UML Diagram** - https://docs.google.com/document/d/1Ys5QWI5XXT6gRgHjWcOwVNO7R5ICWT-3/edit?usp=share_link&ouid=101694166166288235946&rtpof=true&sd=true 
 4. **UseCase Diagram** - https://drive.google.com/file/d/1_HpV_qqZJZK_8DWVhky0Xe2JuFFyydKr/view?usp=sharing

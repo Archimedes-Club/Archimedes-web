@@ -1,22 +1,23 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <aside className="sidebar">
-      <h2 className="sidebar-title">Archimedes Portal</h2>
-      <nav>
-        <ul>
-          <li className="active">Dashboard</li>
-          <li>Ongoing Projects</li>
-          <li className="section-title">Projects</li>
-          <li>All Projects</li>
-          <li className="section-title">Account</li>
-          <li>Profile</li>
-          <li>Logout</li>
-        </ul>
-      </nav>
-    </aside>
+    <div className="sidebar">
+      <h2>Archimedes Portal</h2>
+      <ul>
+        <li onClick={() => navigate("/dashboard")}>Dashboard</li>
+        <li onClick={() => navigate("/ongoing-projects")}>Ongoing Projects</li>
+        <li className="sidebar-title">Projects</li>
+        <li onClick={() => navigate("/all-projects")}>All Projects</li>
+        <li className="sidebar-title">Account</li>
+        <li onClick={() => navigate("/profile")}>Profile</li>
+        <li onClick={() => navigate("/logout")}>Logout</li>
+      </ul>
+    </div>
   );
 };
 

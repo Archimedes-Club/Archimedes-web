@@ -1,6 +1,9 @@
 import React from "react";
 import { Project } from "../types/projects";
 import "../App.css";
+import { IconButton } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface ProjectTableProps {
   projects: Project[];
@@ -20,6 +23,9 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
         <thead>
           <tr>
             <th>Project Title</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Team Lead</th>
             <th>Status</th>
             <th>Team Size</th>
             <th>Actions</th>
@@ -35,15 +41,15 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
               <td>{project.status}</td>
               <td>{project.team_size}</td>
               <td>
-                <button className="edit-btn" onClick={() => onEdit(project)}>
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
+                <IconButton color="primary" onClick={() => onEdit(project)}>
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  color="secondary"
                   onClick={() => onDelete(project.id)}
                 >
-                  Delete
-                </button>
+                  <DeleteIcon />
+                </IconButton>
               </td>
             </tr>
           ))}

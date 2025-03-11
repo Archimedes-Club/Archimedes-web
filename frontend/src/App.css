@@ -1,119 +1,24 @@
-/* body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .dashboard {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .sidebar {
-    width: 250px;
-    background: #f3f3f3;
-    padding: 20px;
-  }
-  
-  .sidebar-title {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar li {
-    padding: 8px;
-    cursor: pointer;
-  }
-  
-  .sidebar li.active {
-    color: purple;
-    font-weight: bold;
-  }
-  
-  .main-content {
-    flex-grow: 1;
-    padding: 20px;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .notification {
-    color: orange;
-  }
-  
-  .buttons {
-    margin: 20px 0;
-  }
-  
-  .create-btn, .submit-btn {
-    padding: 10px 15px;
-    margin-right: 10px;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .create-btn {
-    background: purple;
-    color: white;
-  }
-  
-  .submit-btn {
-    background: blueviolet;
-    color: white;
-  }
-  
-  .project-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .project-table th, .project-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-  }
-  
-  .edit-btn {
-    background: blue;
-    color: white;
-    padding: 5px;
-  }
-  
-  .delete-btn {
-    background: red;
-    color: white;
-    padding: 5px;
-  } */
-
-
-
-  
   body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
   }
   
+
+  /* Dashbord Style */
   .dashboard {
     display: flex;
     height: 100vh;
   }
   
+  /* Sidebar Style */
   .sidebar {
     width: 250px;
     background: #f3f3f3;
     padding: 20px;
   }
   
-  .sidebar-title {
+  .sidebar-h2 {
     font-size: 20px;
     font-weight: bold;
   }
@@ -128,11 +33,25 @@
     cursor: pointer;
   }
   
-  .sidebar li.active {
-    color: purple;
+  .sidebar li.sidebar-title {
+    /* color: #6a11cb; */
     font-weight: bold;
+    margin-top: 20px;
+    cursor: default; /* Remove pointer cursor */
   }
-  
+
+  .sidebar li:hover {
+    background-color: #ddd;
+    color: #6a11cb;
+  }
+
+  /* Remove hover effect from bold titles */
+.sidebar li.sidebar-title:hover {
+  background-color: transparent;
+  color: inherit;
+}
+ 
+/* Dashboar Main section style */
   .main-content {
     flex-grow: 1;
     padding: 20px;
@@ -160,13 +79,18 @@
   }
   
   .create-btn {
-    background: purple;
+    background: #6a11cb;
     color: white;
   }
   
   .submit-btn {
-    background: blueviolet;
+    background: green;
     color: white;
+  }
+
+  .table-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
   }
   
   .project-table {
@@ -174,22 +98,24 @@
     border-collapse: collapse;
   }
   
-  .project-table th, .project-table td {
-    padding: 10px;
+  .project-table th,
+  .project-table td {
     border: 1px solid #ddd;
+    padding: 8px;
   }
   
-  .edit-btn {
-    background: blue;
-    color: white;
-    padding: 5px;
+  .project-table th {
+    background-color: #f2f2f2;
+    text-align: left;
   }
   
-  .delete-btn {
-    background: red;
-    color: white;
-    padding: 5px;
-  }  
+  .project-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .project-table tr:hover {
+    background-color: #ddd;
+  }
 
 
   /* Create Project Page Styles */
@@ -270,7 +196,7 @@
   }
   
   .create-btn {
-    background: purple;
+    background: #6a11cb;
     color: white;
     margin-right: 10px;
   }
@@ -318,3 +244,44 @@
     border-radius: 5px;
     cursor: pointer;
   }
+
+  /* Landing page UI*/
+
+.coming-soon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #6a11cb, #6a11cb);
+  color: white;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+}
+
+.coming-soon-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.coming-soon-text {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+}
+
+.login-btn {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  background-color: white;
+  color: #6a11cb;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #2575fc;
+  color: white;
+}

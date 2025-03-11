@@ -1,13 +1,3 @@
-// import React from "react";
-// import Dashboard from "./components/Dashboard";
-// import "./App.css"; // Import CSS styles
-
-// const App: React.FC = () => {
-//   return <Dashboard />;
-// };
-
-// export default App;
-
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -17,6 +7,7 @@ import {
 } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
+import Home from "./components/Home"; // Import Home component
 import { useAuth } from "./hooks/useAuth"; // Custom hook for authentication
 
 const App: React.FC = () => {
@@ -25,12 +16,13 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
         />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );

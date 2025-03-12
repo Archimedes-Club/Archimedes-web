@@ -1,7 +1,6 @@
-// Login.test.tsx
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Login from "./Login";
+import Login from "../../components/Login";
 import { useNavigate } from "react-router-dom";
 
 // Mock the useNavigate hook from react-router-dom

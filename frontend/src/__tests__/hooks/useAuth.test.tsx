@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useAuth } from './useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 // Wrapper component that uses the hook and renders its state
 const HookWrapper: React.FC = () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import Sidebar from "./Sidebar";
+import Sidebar from "../../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 
 // Mock the useNavigate hook from react-router-dom

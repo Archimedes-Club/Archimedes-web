@@ -1,24 +1,22 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import App from "./App";
-import { useAuth } from "./hooks/useAuth";
+import App from "../App";
+import { useAuth } from "../hooks/useAuth";
 
 // Mock the components to render simple identifiable texts
-jest.mock("./components/Home", () => () => <div>Home</div>);
-jest.mock("./components/Login", () => () => <div>Login</div>);
-jest.mock("./components/Dashboard", () => () => <div>Dashboard</div>);
+jest.mock("../components/Home", () => () => <div>Home</div>);
+jest.mock("../components/Login", () => () => <div>Login</div>);
+jest.mock("../components/Dashboard", () => () => <div>Dashboard</div>);
 
 // Mock useAuth hook
-jest.mock("./hooks/useAuth");
+jest.mock("../hooks/useAuth");
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
-
-// Override BrowserRouter to avoid nested Router issues in tests
 jest.mock("react-router-dom", () => {
   const originalModule = jest.requireActual("react-router-dom");
   return {
     ...originalModule,
-    // Replace BrowserRouter with a simple wrapper that just renders its children.
+    // Replace BrowserRouter with a wrapper that just renders its children.
     BrowserRouter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
 });

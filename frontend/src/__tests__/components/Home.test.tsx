@@ -1,9 +1,9 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Home from "./Home"; // Ensure the Home component exists at this path
+import Home from "../../components/Home"; 
 import { useNavigate } from "react-router-dom";
 
-// Mock the useNavigate hook from react-router-dom
+// Mock the useNavigate ho../../src/components/ok from react-router-dom
 jest.mock("react-router-dom", () => {
   const originalModule = jest.requireActual("react-router-dom");
   return {

@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import Dashboard from "./Dashboard";
+import Dashboard from "../../components/Dashboard";
 import { MemoryRouter } from "react-router-dom";
 
 // Globally mock fetch and alert

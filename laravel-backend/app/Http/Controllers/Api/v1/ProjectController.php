@@ -26,7 +26,13 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        //
+        // A user with role == Student cannot create a project
+        $role = $request->user()->role;
+        if ($role == "student" || $role == "Student"){
+            return response()->json([
+                "message" => "You're not authorized to perform this action"
+            ], 403);
+        }
         return new ProjectResource(Project::create($request->all()));
 
     }
@@ -46,7 +52,14 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        //
+        // A user with role == Student cannot update project
+        $role = $request->user()->role;
+        if ($role == "student" || $role == "Student"){
+            return response()->json([
+                "message" => "You're not authorized to perform this action"
+            ], 403);
+        }
+
         $project->update($request->all());
         return new ProjectResource($project);
     }
@@ -56,7 +69,14 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        // A user with role == Student cannot delete a project
+        $role = auth()->user()->role;
+        if ($role == "student" || $role == "Student"){
+            return response()->json([
+                "message" => "You're not authorized to perform this action"
+            ], 403);
+        }
+
         $project->delete();
         return response()->json(['message'=>"$project->title Deleted Successfully"]);
     }

@@ -9,6 +9,7 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Home from "./components/Home"; // Import Home component
 import { useAuth } from "./hooks/useAuth"; // Custom hook for authentication
+import AllProjects from "./components/AllProjects";
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -21,6 +22,10 @@ const App: React.FC = () => {
         <Route
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/all-projects"
+          element={isAuthenticated ? <AllProjects /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

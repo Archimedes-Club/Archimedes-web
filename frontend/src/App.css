@@ -16,11 +16,23 @@ body {
   }
   
   /* Sidebar Style */
-  .sidebar {
+  /* .sidebar {
     width: 250px;
     background: #f3f3f3;
     padding: 20px;
-  }
+  } */
+
+  /* Sidebar Style */
+.sidebar {
+  position: relative; /* Remove fixed positioning */
+  height: 100vh; /* Full viewport height */
+  width: 250px; /* Adjust width as needed */
+  overflow-y: auto; /* Add scrolling inside the sidebar if content overflows */
+  background-color: #f4f4f4; /* Adjust background color as needed */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better visibility */
+  padding: 20px;
+  flex-shrink: 0; /* Prevent the sidebar from shrinking */
+}
   
   .sidebar-h2 {
     font-size: 20px;
@@ -59,6 +71,9 @@ body {
   .main-content {
     flex-grow: 1;
     padding: 20px;
+    overflow-y: auto; /* Add scrolling for the main content if needed */
+  background-color: #fff; /* Adjust background color as needed */
+
   }
   
   .header {
@@ -91,6 +106,26 @@ body {
     background: green;
     color: white;
   }
+
+  .view-more-container {
+    text-align: left;
+    margin-top: 20px;
+  }
+  
+  .view-more-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .view-more-btn:hover {
+    background-color: #0056b3;
+  }
+  
 
   .table-title {
     font-size: 1.5rem;
@@ -407,4 +442,31 @@ body {
 .sidebar li.sidebar-title:hover {
   background-color: transparent;
   color: inherit;
+}
+
+
+/* Pagination container */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination-container button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination-container button:hover {
+  background-color: #0056b3;
+}
+
+.pagination-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

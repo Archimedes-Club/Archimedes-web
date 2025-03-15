@@ -1,11 +1,9 @@
-//Code updated for API integration
-
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import Sidebar from "./Sidebar";
 import ProjectTable from "./ProjectTable";
 import { Project } from "../types/projects";
 import "../App.css";
-// import { Rss } from "lucide-react";
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -21,7 +19,8 @@ const Dashboard: React.FC = () => {
     team_lead: "",
     team_size: 1,
   });
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // New state variable
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const navigate = useNavigate(); // Initialize navigate
 
   // Fetch projects from API
   useEffect(() => {
@@ -29,7 +28,7 @@ const Dashboard: React.FC = () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
           method: "GET",
-        }); // Placeholder API URL
+        });
         const data = await response.json();
         setProjects(data.data);
       } catch (error) {
@@ -54,9 +53,8 @@ const Dashboard: React.FC = () => {
       alert("All fields are required.");
       return;
     }
-    setIsSubmitting(true); // Set isSubmitting to true
+    setIsSubmitting(true);
     try {
-      console.log("Creating project:", JSON.stringify(newProject));
       const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
         method: "POST",
         headers: {
@@ -67,18 +65,10 @@ const Dashboard: React.FC = () => {
       });
 
       if (!response.ok) {
-        // Parse the response error body if available
         const errorData = await response.json();
         console.error("Server Error:", errorData);
         alert(`Server Error: ` + errorData.message);
-
-        if (response.status === 422) {
-          console.error("Validation Errors:", errorData.errors);
-        } else {
-          console.error("Unexpected Error:", errorData.message);
-        }
-
-        return; // Stop execution if there is an error
+        return;
       }
 
       const createdProject = await response.json();
@@ -95,7 +85,7 @@ const Dashboard: React.FC = () => {
     } catch (error) {
       console.error("Error creating project:", error);
     } finally {
-      setIsSubmitting(false); // Set isSubmitting to false
+      setIsSubmitting(false);
     }
   };
 
@@ -109,7 +99,7 @@ const Dashboard: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error("server error", error);
+        console.error("Server Error:", error);
       } else {
         const message = await response.json();
         alert(message.message);
@@ -131,7 +121,6 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
     if (!editingProject) return;
 
-    //Input validation
     if (
       !editingProject.title.trim() ||
       !editingProject.description.trim() ||
@@ -142,7 +131,7 @@ const Dashboard: React.FC = () => {
       alert("All fields are required.");
       return;
     }
-    setIsSubmitting(true); // Set isSubmitting to true
+    setIsSubmitting(true);
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
@@ -157,14 +146,7 @@ const Dashboard: React.FC = () => {
         const errorData = await response.json();
         console.error("Server Error:", errorData);
         alert(`Server Error: ` + errorData.message);
-
-        if (response.status === 422) {
-          console.error("Validation Errors:", errorData.errors);
-        } else {
-          console.error("Unexpected Error:", errorData.message);
-        }
-
-        return; // Stop execution if there is an error
+        return;
       }
 
       const jsonResponse = await response.json();
@@ -180,7 +162,7 @@ const Dashboard: React.FC = () => {
       console.error("Error updating project:", error);
       alert("An unexpected error occurred while updating the project.");
     } finally {
-      setIsSubmitting(false); // Set isSubmitting to false
+      setIsSubmitting(false);
     }
   };
 
@@ -207,13 +189,22 @@ const Dashboard: React.FC = () => {
           </div>
 
           <ProjectTable
-            projects={projects}
+            projects={projects.slice(0, 15)} // Display only the first 15 projects
             onEdit={editProject}
             onDelete={deleteProject}
           />
+
+          {/* Ensure the View More button is placed outside the ProjectTable */}
+          <div className="view-more-container">
+            <button
+              className="view-more-btn"
+              onClick={() => navigate("/all-projects")} // Redirect to All Projects page
+            >
+              View More
+            </button>
+          </div>
         </main>
       ) : (
-        // CREATE PROJECT FORM
         <main className="create-project-page">
           <h2 className="breadcrumb">
             Dashboard / {isEditPageOpen ? "Edit Project" : "Create Project"}
@@ -244,7 +235,7 @@ const Dashboard: React.FC = () => {
                     : setNewProject({ ...newProject, title: e.target.value })
                 }
                 className="input-field"
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               />
               <label>Description</label>
               <textarea
@@ -266,7 +257,7 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               />
               <label>Team Size</label>
               <input
@@ -289,7 +280,7 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               />
               <label>Status</label>
               <select
@@ -307,7 +298,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, status: e.target.value })
                 }
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               >
                 <option value="">Select Project Status</option>
                 <option value="Deployed">Deployed</option>
@@ -330,7 +321,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, category: e.target.value })
                 }
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               >
                 <option value="">Select Project Category</option>
                 <option value="Web">Web</option>
@@ -359,7 +350,7 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
-                disabled={isSubmitting} // Disable input during submission
+                disabled={isSubmitting}
               />
               <div className="form-buttons">
                 <button type="submit" className="create-btn">
@@ -372,7 +363,7 @@ const Dashboard: React.FC = () => {
                     setIsCreatePageOpen(false);
                     setIsEditPageOpen(false);
                   }}
-                  disabled={isSubmitting} // Disable button during submission
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>

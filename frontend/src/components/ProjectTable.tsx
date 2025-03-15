@@ -18,7 +18,6 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
 }) => {
   return (
     <div>
-      <h2 className="table-title">All Projects</h2>
       <table className="project-table">
         <thead>
           <tr>

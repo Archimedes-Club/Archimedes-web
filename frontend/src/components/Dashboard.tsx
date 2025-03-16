@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import ProjectTable from "./ProjectTable";
 import { Project } from "../types/projects";
 import "../App.css";
+import { IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import "../styles/DashboardMain.css";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreatePageOpen, setIsCreatePageOpen] = useState(false);
   const [isEditPageOpen, setIsEditPageOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [newProject, setNewProject] = useState<Omit<Project, "id">>({
+  const [newProject, setNewProject] = useState<Project>({
+    id: 0,
     title: "",
     description: "",
     status: "",
@@ -19,28 +25,48 @@ const Dashboard: React.FC = () => {
     team_lead: "",
     team_size: 1,
   });
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const navigate = useNavigate(); // Initialize navigate
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  
+  const isMobile = useMediaQuery('(max-width:768px)');
+  
+  const navigate = useNavigate();
+  const apiToken = localStorage.getItem("authToken");
 
-  // Fetch projects from API
+  // Toggle sidebar function
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+  };
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
           method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiToken}`,
+          },
         });
         const data = await response.json();
-        setProjects(data.data);
+        if (Array.isArray(data.data)) {
+          setProjects(data.data);
+        } else {
+          console.error("Invalid data format: Expected an array");
+          setProjects([]); // Set an empty array to prevent errors
+        }
       } catch (error) {
         console.error("Error fetching projects:", error);
+        setProjects([]); // Set an empty array if API fails
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProjects();
-  }, []);
 
-  // Create a new project
+    fetchProjects();
+  }, [apiToken]);
+
   const addProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
@@ -53,6 +79,7 @@ const Dashboard: React.FC = () => {
       alert("All fields are required.");
       return;
     }
+
     setIsSubmitting(true);
     try {
       const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
@@ -60,20 +87,20 @@ const Dashboard: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          authorization: `Bearer ${apiToken}`,
         },
         body: JSON.stringify(newProject),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Server Error:", errorData);
         alert(`Server Error: ` + errorData.message);
         return;
       }
-
       const createdProject = await response.json();
       setProjects([...projects, createdProject.data]);
       setNewProject({
+        id: 0,
         title: "",
         description: "",
         category: "Web",
@@ -89,14 +116,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Delete a project
   const deleteProject = async (id: number) => {
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/v1/projects/${id}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiToken}`,
+          },
+        }
       );
-
       if (!response.ok) {
         const error = await response.json();
         console.error("Server Error:", error);
@@ -110,17 +142,14 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Edit a project
   const editProject = (project: Project) => {
     setEditingProject({ ...project });
     setIsEditPageOpen(true);
   };
 
-  // Update a project
   const updateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProject) return;
-
     if (
       !editingProject.title.trim() ||
       !editingProject.description.trim() ||
@@ -131,24 +160,27 @@ const Dashboard: React.FC = () => {
       alert("All fields are required.");
       return;
     }
+
     setIsSubmitting(true);
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            authorization: `Bearer ${apiToken}`,
+          },
           body: JSON.stringify(editingProject),
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Server Error:", errorData);
         alert(`Server Error: ` + errorData.message);
         return;
       }
-
       const jsonResponse = await response.json();
       const updatedProject = jsonResponse.data;
       setProjects(
@@ -168,14 +200,30 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <Sidebar />
+      {/* Hamburger Menu */}
+      <IconButton className="hamburger-menu" onClick={toggleSidebar}>
+        <MenuIcon />
+      </IconButton>
+
+      {/* Sidebar */}
+      <Sidebar isVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
+      
+      {/* Sidebar Overlay - only visible on mobile when sidebar is open */}
+      {isMobile && isSidebarVisible && (
+        <div className="sidebar-overlay visible" onClick={() => setIsSidebarVisible(false)}></div>
+      )}
+
       {isLoading ? (
-        <p>Loading projects...</p>
+        <div className={`loading-container ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
+          Loading projects...
+        </div>
       ) : !isCreatePageOpen && !isEditPageOpen ? (
-        <main className="main-content">
+        <div className={`main-content ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
           <div className="header">
-            <h1>Welcome Prof. Lopez</h1>
-            <span className="notification">🔔</span>
+            <h2>Welcome Prof. Lopez</h2>
+            <IconButton>
+              <NotificationsIcon className="notification-icon" />
+            </IconButton>
           </div>
 
           <div className="buttons">
@@ -185,30 +233,31 @@ const Dashboard: React.FC = () => {
             >
               Create a Project
             </button>
-            <button className="submit-btn">Submit a Project Idea</button>
+            <button className="submit-btn">
+              Submit a Project Idea
+            </button>
           </div>
 
           <ProjectTable
-            projects={projects.slice(0, 15)} // Display only the first 15 projects
+            projects={projects}
             onEdit={editProject}
             onDelete={deleteProject}
           />
 
-          {/* Ensure the View More button is placed outside the ProjectTable */}
           <div className="view-more-container">
             <button
               className="view-more-btn"
-              onClick={() => navigate("/all-projects")} // Redirect to All Projects page
+              onClick={() => navigate("/all-projects")}
             >
               View More
             </button>
           </div>
-        </main>
+        </div>
       ) : (
-        <main className="create-project-page">
-          <h2 className="breadcrumb">
+        <div className={`create-project-page ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
+          <div className="breadcrumb">
             Dashboard / {isEditPageOpen ? "Edit Project" : "Create Project"}
-          </h2>
+          </div>
           <div className="create-project-container">
             <h2 className="page-title">
               {isEditPageOpen ? "Edit Project" : "Create a New Project"}
@@ -217,15 +266,11 @@ const Dashboard: React.FC = () => {
               className="project-form"
               onSubmit={isEditPageOpen ? updateProject : addProject}
             >
-              <label>Project Title</label>
+              <label htmlFor="title">Project Title</label>
               <input
                 type="text"
-                placeholder="Enter Project Title"
-                value={
-                  isEditPageOpen && editingProject
-                    ? editingProject.title
-                    : newProject.title
-                }
+                id="title"
+                value={isEditPageOpen && editingProject ? editingProject.title : newProject.title}
                 onChange={(e) =>
                   isEditPageOpen && editingProject
                     ? setEditingProject({
@@ -237,9 +282,10 @@ const Dashboard: React.FC = () => {
                 className="input-field"
                 disabled={isSubmitting}
               />
-              <label>Description</label>
+
+              <label htmlFor="description">Description</label>
               <textarea
-                placeholder="Enter Description"
+                id="description"
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.description
@@ -259,10 +305,11 @@ const Dashboard: React.FC = () => {
                 className="input-field"
                 disabled={isSubmitting}
               />
-              <label>Team Size</label>
+
+              <label htmlFor="team_size">Team Size</label>
               <input
                 type="number"
-                placeholder="Enter Team Size"
+                id="team_size"
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.team_size
@@ -282,9 +329,10 @@ const Dashboard: React.FC = () => {
                 className="input-field"
                 disabled={isSubmitting}
               />
-              <label>Status</label>
+
+              <label htmlFor="status">Status</label>
               <select
-                className="input-field"
+                id="status"
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.status
@@ -298,6 +346,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, status: e.target.value })
                 }
+                className="input-field"
                 disabled={isSubmitting}
               >
                 <option value="">Select Project Status</option>
@@ -305,9 +354,10 @@ const Dashboard: React.FC = () => {
                 <option value="Ongoing">Ongoing</option>
                 <option value="Hiring">Hiring</option>
               </select>
-              <label>Category</label>
+
+              <label htmlFor="category">Category</label>
               <select
-                className="input-field"
+                id="category"
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.category
@@ -321,6 +371,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, category: e.target.value })
                 }
+                className="input-field"
                 disabled={isSubmitting}
               >
                 <option value="">Select Project Category</option>
@@ -329,10 +380,11 @@ const Dashboard: React.FC = () => {
                 <option value="AI/ML">AI/ML</option>
                 <option value="IoT">IoT</option>
               </select>
-              <label>Team Lead</label>
+
+              <label htmlFor="team_lead">Team Lead</label>
               <input
                 type="text"
-                placeholder="Enter Team Lead"
+                id="team_lead"
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.team_lead
@@ -352,9 +404,18 @@ const Dashboard: React.FC = () => {
                 className="input-field"
                 disabled={isSubmitting}
               />
+
               <div className="form-buttons">
-                <button type="submit" className="create-btn">
-                  {isEditPageOpen ? "Update Project" : "Create Project"}
+                <button
+                  type="submit"
+                  className="create-btn"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Processing..."
+                    : isEditPageOpen
+                    ? "Update Project"
+                    : "Create Project"}
                 </button>
                 <button
                   type="button"
@@ -370,7 +431,7 @@ const Dashboard: React.FC = () => {
               </div>
             </form>
           </div>
-        </main>
+        </div>
       )}
     </div>
   );

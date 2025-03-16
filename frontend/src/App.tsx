@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Home from "./components/Home"; // Import Home component
 import { useAuth } from "./hooks/useAuth"; // Custom hook for authentication
 import AllProjects from "./components/AllProjects";
+import "./SidebarToggle";
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -18,7 +19,10 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
+        />
         <Route
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}

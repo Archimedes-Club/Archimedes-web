@@ -4,6 +4,7 @@ import "../App.css";
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import "../styles/DashboardMain.css";
 
 interface ProjectTableProps {
   projects: Project[];
@@ -17,7 +18,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   onDelete,
 }) => {
   return (
-    <div>
+    <div className="table-container">
       <table className="project-table">
         <thead>
           <tr>
@@ -40,14 +41,11 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
               <td>{project.status}</td>
               <td>{project.team_size}</td>
               <td>
-                <IconButton color="primary" onClick={() => onEdit(project)}>
-                  <EditIcon />
+                <IconButton onClick={() => onEdit(project)}>
+                  <EditIcon style={{ color: '#6a11cb' }}/>
                 </IconButton>
-                <IconButton
-                  color="secondary"
-                  onClick={() => onDelete(project.id)}
-                >
-                  <DeleteIcon />
+                <IconButton onClick={() => onDelete(project.id)}>
+                  <DeleteIcon style={{ color: '#FF5733' }}/>
                 </IconButton>
               </td>
             </tr>

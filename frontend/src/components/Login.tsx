@@ -3,29 +3,62 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Hardcoded credentials for testing
-  const validCredentials = {
-    username: "admin",
-    password: "password123",
-  };
+  // const validCredentials = {
+  //   username: "admin",
+  //   password: "password123",
+  // };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Check if entered credentials match the hardcoded ones
-    if (
-      username === validCredentials.username &&
-      password === validCredentials.password
-    ) {
-      localStorage.setItem("authToken", "your-auth-token"); // Simulating authentication token storage
-      navigate("/dashboard"); // Redirect to dashboard
-    } else {
-      setError("Invalid username or password"); // Show error message
+    // if (
+    //   email === validCredentials.username &&
+    //   password === validCredentials.password
+    // ) {
+    //   localStorage.setItem("authToken", "your-auth-token"); // Simulating authentication token storage
+    //   navigate("/dashboard"); // Redirect to dashboard
+    // } else {
+    //   setError("Invalid username or password"); // Show error message
+    // }
+
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter email and password");
+    }
+    try {
+      // await getCsrfToken();
+      const response = await fetch("http://127.0.0.1:8000/api/login", {
+        method: "POST",
+        // credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (response.status == 422) {
+        throw new Error("Invalid Login Credentials");
+      } else if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Login Failed");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      // Storin g the token in local storage
+      localStorage.setItem("authToken", data.token);
+
+      alert("Logged in as " + data.user.name);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert(error);
     }
   };
 
@@ -33,11 +66,11 @@ const Login: React.FC = () => {
     <div className="login-container">
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <label>Username</label>
+        <label>email</label>
         <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <label>Password</label>

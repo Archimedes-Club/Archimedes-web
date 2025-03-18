@@ -1,0 +1,175 @@
+/* OngoingProjects.css */
+
+.ongoingprojects {
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-top: 10px;
+}
+
+.page-header {
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.projects-table-container {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  background-color: #ffffff;
+  margin-top: 0;
+  padding: 0;
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.projects-table thead tr {
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.projects-table th {
+  color: #666;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: none;
+}
+
+.table-row {
+  border-bottom: 1px solid #eee;
+}
+
+.table-row:hover {
+  background-color: #f9f9f9;
+}
+
+.table-cell {
+  padding: 12px 16px !important;
+  border-bottom: none !important;
+  font-size: 14px;
+}
+
+.project-title {
+  font-weight: 500;
+  cursor: pointer;
+  color: #1976d2;
+}
+
+.project-title:hover {
+  text-decoration: underline;
+}
+
+.status-cell {
+  color: #4CAF50;
+  font-weight: 500;
+  padding: 12px 16px !important;
+  border-bottom: none !important;
+}
+
+.members-cell {
+  color: #666;
+  padding: 12px 16px !important;
+  border-bottom: none !important;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.view-button {
+  background-color: transparent;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  padding: 4px 10px;
+  text-transform: none;
+  font-size: 0.75rem;
+  min-width: 90px;
+}
+
+.view-button:hover {
+  background-color: rgba(3, 17, 32, 0.04);
+}
+
+
+
+
+.edit-button {
+  color: #1976d2;
+  padding: 4px;
+}
+
+.edit-button:hover {
+  background-color: rgba(25, 118, 210, 0.04);
+}
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .projects-table {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .table-cell, .status-cell, .members-cell {
+    padding: 8px 12px !important;
+  }
+  
+  .actions-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .view-button {
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .ongoingprojects {
+    padding: 15px;
+  }
+}
+
+.projects-table thead tr {
+  background-color: #f9f9f9;
+}
+
+.table-header-cell {
+  padding: 12px 16px !important;
+  font-weight: 1000 !important;
+  color: #666 !important;
+  border-bottom: 1px solid #eee !important;
+  font-size: 16px;
+  
+}
+
+/* Ensure proper alignment between headers and content */
+.table-header-cell, .table-cell {
+  padding: 12px 16px !important;
+}

@@ -10,7 +10,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import "../styles/DashboardMain.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const Dashboard: React.FC = () => {
+const AllProjects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatePageOpen, setIsCreatePageOpen] = useState(false);
@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
-  const isMobile = useMediaQuery('(max-width:768px)');
+  const isMobile = useMediaQuery("(max-width:768px)");
 
   const navigate = useNavigate();
   const apiToken = localStorage.getItem("authToken");
@@ -206,21 +206,35 @@ const Dashboard: React.FC = () => {
       </IconButton>
 
       {/* Sidebar */}
-      <Sidebar isVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
+      <Sidebar
+        isVisible={isSidebarVisible}
+        onClose={() => setIsSidebarVisible(false)}
+      />
 
       {/* Sidebar Overlay - only visible on mobile when sidebar is open */}
       {isMobile && isSidebarVisible && (
-        <div className="sidebar-overlay visible" onClick={() => setIsSidebarVisible(false)}></div>
+        <div
+          className="sidebar-overlay visible"
+          onClick={() => setIsSidebarVisible(false)}
+        ></div>
       )}
 
       {isLoading ? (
-        <div className={`loading-container ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
+        <div
+          className={`loading-container ${
+            isSidebarVisible && !isMobile ? "shifted" : ""
+          }`}
+        >
           Loading projects...
         </div>
       ) : !isCreatePageOpen && !isEditPageOpen ? (
-        <div className={`main-content ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
+        <div
+          className={`main-content ${
+            isSidebarVisible && !isMobile ? "shifted" : ""
+          }`}
+        >
           <div className="header">
-            <h2>Welcome Prof. Lopez</h2>
+            <h2>All Projects</h2>
             <IconButton>
               <NotificationsIcon className="notification-icon" />
             </IconButton>
@@ -233,9 +247,7 @@ const Dashboard: React.FC = () => {
             >
               Create a Project
             </button>
-            <button className="submit-btn">
-              Submit a Project Idea
-            </button>
+            <button className="submit-btn">Submit a Project Idea</button>
           </div>
 
           <ProjectTable
@@ -244,17 +256,21 @@ const Dashboard: React.FC = () => {
             onDelete={deleteProject}
           />
 
-          {/* <div className="view-more-container">
+          <div className="view-more-container">
             <button
               className="view-more-btn"
               onClick={() => navigate("/all-projects")}
             >
               View More
             </button>
-          </div> */}
+          </div>
         </div>
       ) : (
-        <div className={`create-project-page ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
+        <div
+          className={`create-project-page ${
+            isSidebarVisible && !isMobile ? "shifted" : ""
+          }`}
+        >
           <div className="breadcrumb">
             Dashboard / {isEditPageOpen ? "Edit Project" : "Create Project"}
           </div>
@@ -270,7 +286,11 @@ const Dashboard: React.FC = () => {
               <input
                 type="text"
                 id="title"
-                value={isEditPageOpen && editingProject ? editingProject.title : newProject.title}
+                value={
+                  isEditPageOpen && editingProject
+                    ? editingProject.title
+                    : newProject.title
+                }
                 onChange={(e) =>
                   isEditPageOpen && editingProject
                     ? setEditingProject({
@@ -437,6 +457,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
-
-
+export default AllProjects;

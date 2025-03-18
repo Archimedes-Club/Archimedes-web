@@ -11,6 +11,8 @@ import Home from "./components/Home"; // Import Home component
 import { useAuth } from "./hooks/useAuth"; // Custom hook for authentication
 import AllProjects from "./components/AllProjects";
 import "./SidebarToggle";
+import Registration from "./components/Registration";
+import OngoingProjects from "./components/OngoingProjects";
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -19,6 +21,8 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Registration />} />
+
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
@@ -30,6 +34,16 @@ const App: React.FC = () => {
         <Route
           path="/all-projects"
           element={isAuthenticated ? <AllProjects /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/ongoingprojects"
+          element={
+            isAuthenticated ? (
+              <OngoingProjects projects={[]} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

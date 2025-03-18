@@ -21,6 +21,7 @@ const Dashboard: React.FC = () => {
     team_lead: "",
     team_size: 1,
   });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // New state variable
 
   // Fetch projects from API
   useEffect(() => {
@@ -53,6 +54,7 @@ const Dashboard: React.FC = () => {
       alert("All fields are required.");
       return;
     }
+    setIsSubmitting(true); // Set isSubmitting to true
     try {
       console.log("Creating project:", JSON.stringify(newProject));
       const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
@@ -92,6 +94,8 @@ const Dashboard: React.FC = () => {
       setIsCreatePageOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
+    } finally {
+      setIsSubmitting(false); // Set isSubmitting to false
     }
   };
 
@@ -125,30 +129,58 @@ const Dashboard: React.FC = () => {
   // Update a project
   const updateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingProject) {
-      console.log(JSON.stringify(editingProject));
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(editingProject),
-          }
-        );
+    if (!editingProject) return;
 
-        const jsonResponse = await response.json();
-        const updatedProject = jsonResponse.data;
-        setProjects(
-          projects.map((proj) =>
-            proj.id === updatedProject.id ? updatedProject : proj
-          )
-        );
-        setEditingProject(null);
-        setIsEditPageOpen(false);
-      } catch (error) {
-        console.error("Error updating project:", error);
+    //Input validation
+    if (
+      !editingProject.title.trim() ||
+      !editingProject.description.trim() ||
+      !editingProject.category.trim() ||
+      !editingProject.status.trim() ||
+      editingProject.team_size <= 0
+    ) {
+      alert("All fields are required.");
+      return;
+    }
+    setIsSubmitting(true); // Set isSubmitting to true
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingProject),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server Error:", errorData);
+        alert(`Server Error: ` + errorData.message);
+
+        if (response.status === 422) {
+          console.error("Validation Errors:", errorData.errors);
+        } else {
+          console.error("Unexpected Error:", errorData.message);
+        }
+
+        return; // Stop execution if there is an error
       }
+
+      const jsonResponse = await response.json();
+      const updatedProject = jsonResponse.data;
+      setProjects(
+        projects.map((proj) =>
+          proj.id === updatedProject.id ? updatedProject : proj
+        )
+      );
+      setEditingProject(null);
+      setIsEditPageOpen(false);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert("An unexpected error occurred while updating the project.");
+    } finally {
+      setIsSubmitting(false); // Set isSubmitting to false
     }
   };
 
@@ -212,6 +244,7 @@ const Dashboard: React.FC = () => {
                     : setNewProject({ ...newProject, title: e.target.value })
                 }
                 className="input-field"
+                disabled={isSubmitting} // Disable input during submission
               />
               <label>Description</label>
               <textarea
@@ -233,6 +266,7 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
+                disabled={isSubmitting} // Disable input during submission
               />
               <label>Team Size</label>
               <input
@@ -255,6 +289,7 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
+                disabled={isSubmitting} // Disable input during submission
               />
               <label>Status</label>
               <select
@@ -272,6 +307,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, status: e.target.value })
                 }
+                disabled={isSubmitting} // Disable input during submission
               >
                 <option value="">Select Project Status</option>
                 <option value="Deployed">Deployed</option>
@@ -294,6 +330,7 @@ const Dashboard: React.FC = () => {
                       })
                     : setNewProject({ ...newProject, category: e.target.value })
                 }
+                disabled={isSubmitting} // Disable input during submission
               >
                 <option value="">Select Project Category</option>
                 <option value="Web">Web</option>
@@ -322,17 +359,20 @@ const Dashboard: React.FC = () => {
                       })
                 }
                 className="input-field"
+                disabled={isSubmitting} // Disable input during submission
               />
               <div className="form-buttons">
                 <button type="submit" className="create-btn">
                   {isEditPageOpen ? "Update Project" : "Create Project"}
                 </button>
                 <button
+                  type="button"
                   className="cancel-btn"
                   onClick={() => {
                     setIsCreatePageOpen(false);
                     setIsEditPageOpen(false);
                   }}
+                  disabled={isSubmitting} // Disable button during submission
                 >
                   Cancel
                 </button>

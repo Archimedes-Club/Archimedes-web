@@ -16,10 +16,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const navigate = useNavigate();
-  
+
   return (
     <>
-      <div className={`sidebar ${isVisible ? 'visible' : 'collapsed'}`}>
+      <div className={`sidebar ${isVisible ? "visible" : "collapsed"}`}>
         {/* <button className="close-btn" onClick={onClose}>
           <CloseIcon />
         </button> */}
@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <DashboardIcon />
             {isVisible && <span>Dashboard</span>}
           </li>
-          <li>
+          <li onClick={() => navigate("/ongoingprojects")}>
             <WorkIcon />
             {isVisible && <span>Ongoing Projects</span>}
           </li>
@@ -50,9 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           </li>
         </ul>
       </div>
-      {isVisible && (
-        <div className="sidebar-overlay" onClick={onClose}></div>
-      )}
+      {isVisible && <div className="sidebar-overlay" onClick={onClose}></div>}
     </>
   );
 };

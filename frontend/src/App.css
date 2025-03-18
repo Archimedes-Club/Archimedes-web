@@ -15,5 +15,7 @@ body {
 /* Import modular CSS files */
 @import './styles/LandingPage.css';
 @import './styles/LoginPage.css';
+@import './styles/Registration.css';
 @import './styles/DashboardMain.css';
 @import './styles/DashboardSidebar.css';
+@import './styles/OngoingProjects.css';

@@ -1,6 +1,5 @@
-//code to test login with hardcorded credentials
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -8,25 +7,8 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Hardcoded credentials for testing
-  // const validCredentials = {
-  //   username: "admin",
-  //   password: "password123",
-  // };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check if entered credentials match the hardcoded ones
-    // if (
-    //   email === validCredentials.username &&
-    //   password === validCredentials.password
-    // ) {
-    //   localStorage.setItem("authToken", "your-auth-token"); // Simulating authentication token storage
-    //   navigate("/dashboard"); // Redirect to dashboard
-    // } else {
-    //   setError("Invalid username or password"); // Show error message
-    // }
 
     if (!email.trim() || !password.trim()) {
       alert("Please enter email and password");
@@ -84,6 +66,9 @@ const Login: React.FC = () => {
         {/* Show error if login fails */}
         <button type="submit">Login</button>
       </form>
+      <div className="register-link">
+        Don't have an account? <Link to="/register">Register here</Link>
+      </div>
     </div>
   );
 };

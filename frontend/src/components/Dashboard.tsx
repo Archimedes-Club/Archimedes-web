@@ -27,9 +27,9 @@ const Dashboard: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-  
+
   const isMobile = useMediaQuery('(max-width:768px)');
-  
+
   const navigate = useNavigate();
   const apiToken = localStorage.getItem("authToken");
 
@@ -207,7 +207,7 @@ const Dashboard: React.FC = () => {
 
       {/* Sidebar */}
       <Sidebar isVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
-      
+
       {/* Sidebar Overlay - only visible on mobile when sidebar is open */}
       {isMobile && isSidebarVisible && (
         <div className="sidebar-overlay visible" onClick={() => setIsSidebarVisible(false)}></div>
@@ -244,14 +244,14 @@ const Dashboard: React.FC = () => {
             onDelete={deleteProject}
           />
 
-          <div className="view-more-container">
+          {/* <div className="view-more-container">
             <button
               className="view-more-btn"
               onClick={() => navigate("/all-projects")}
             >
               View More
             </button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div className={`create-project-page ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
@@ -438,3 +438,5 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+

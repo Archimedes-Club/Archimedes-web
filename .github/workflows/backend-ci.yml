@@ -2,13 +2,13 @@ name: Backend CI
 
 on:
   push:
-    branches: [ frontend-test ]
+    branches: [ backend-test ]
     paths:
-      - 'backend/**'
+      - 'laravel-backend/**'
   pull_request:
-    branches: [ frontend-test ]
+    branches: [ backend-test ]
     paths:
-      - 'backend/**'
+      - 'laravel-backend/**'
 
 jobs:
   backend-tests:
@@ -41,22 +41,23 @@ jobs:
 
       # Step 3: Install Composer dependencies
       - name: Install Composer Dependencies
-        working-directory: backend
+        working-directory: laravel-backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       # Step 4: Prepare backend environment using .env.ci
       - name: Prepare Environment
-        working-directory: backend
+        working-directory: laravel-backend
         run: |
           cp .env.ci .env
           php artisan key:generate
 
-      # Step 5: Run migrations and seed the database 
+      # Step 5: Run migrations and seed the database
       - name: Migrate and Seed Database
-        working-directory: backend
+        working-directory: laravel-backend
         run: php artisan migrate --seed --env=testing
 
       # Step 6: Run Laravel tests
       - name: Run Backend Tests
-        working-directory: backend
+        working-directory: laravel-backend
         run: php artisan test
+

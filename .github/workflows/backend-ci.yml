@@ -1,0 +1,62 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ frontend-test ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ frontend-test ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: archimedesdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Step 2: Setup PHP environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, bcmath, pdo_mysql
+
+      # Step 3: Install Composer dependencies
+      - name: Install Composer Dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # Step 4: Prepare backend environment using .env.ci
+      - name: Prepare Environment
+        working-directory: backend
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+
+      # Step 5: Run migrations and seed the database 
+      - name: Migrate and Seed Database
+        working-directory: backend
+        run: php artisan migrate --seed --env=testing
+
+      # Step 6: Run Laravel tests
+      - name: Run Backend Tests
+        working-directory: backend
+        run: php artisan test

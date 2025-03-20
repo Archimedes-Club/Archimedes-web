@@ -2,11 +2,11 @@ name: Backend CI
 
 on:
   push:
-    branches: [ backend-test ]
+    branches: [  frontend-test ]
     paths:
       - 'laravel-backend/**'
   pull_request:
-    branches: [ backend-test ]
+    branches: [ frontend-test ]
     paths:
       - 'laravel-backend/**'
 

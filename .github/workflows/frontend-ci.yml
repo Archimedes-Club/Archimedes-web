@@ -3,11 +3,11 @@ name: Frontend CI
 # Trigger the workflow only when there are changes in the "frontend" folder on the main branch.
 on:
   push:
-    branches: [ frontEnd-test ]
+    branches: [ main ]
     paths:
       - 'frontend/**'
   pull_request:
-    branches: [ frontEnd-test ]
+    branches: [ main ]
     paths:
       - 'frontend/**'
 

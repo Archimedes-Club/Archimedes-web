@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\ProjectController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 
 // Routes that are allowed to Authenicated Users
@@ -26,6 +27,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::delete('/user', [UserController::class,'delete']);
 
     Route::post('/logout',[AuthController::class, 'logout']);
+
 });
 
 
@@ -49,3 +51,10 @@ Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v
 Route::post('/register',[AuthController::class, 'register']);
 
 Route::post('/login',[AuthController::class, 'login']);
+
+Route::get('/debug-session', function (Request $request) {
+    return response()->json([
+        'session_data' => session()->all(),
+        'auth_user' => Auth::user(),
+    ]);
+});

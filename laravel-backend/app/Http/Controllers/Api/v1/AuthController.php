@@ -43,12 +43,15 @@ class AuthController extends Controller
         if(Auth::attempt(['email' => $request->email, 'password' => $request->password], true)){
             $request->session()->regenerate();
 
+            session(['user_id' => Auth::id()]);
+
+            session()->save();
+
             return response()->json([
                 'user' => new UserResource(Auth::user()),
                 'message' => 'Login successful',
             ], 200);
         }
-
         return response()->json([
             'message' => 'Invalid credentials'
         ], 401);
@@ -56,7 +59,7 @@ class AuthController extends Controller
 
     public function logout(Request $request){
 
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerate(); // Regenerate CSRF token
 

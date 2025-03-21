@@ -8,6 +8,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import "../styles/DashboardSidebar.css";
+import { logout } from "../services/api/authServices";
 
 interface SidebarProps {
   isVisible: boolean;
@@ -16,6 +17,16 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const navigate = useNavigate();
+
+  const handleLogut = async () =>  {
+    try{ 
+      const response = await logout();
+      alert(response.message);
+      window.location.reload(); 
+    }catch(error){
+      console.log(error);
+    }
+  }
 
   return (
     <>
@@ -44,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <PersonIcon />
             {isVisible && <span>Profile</span>}
           </li>
-          <li>
+          <li onClick={handleLogut}>
             <LogoutIcon />
             {isVisible && <span>Logout</span>}
           </li>

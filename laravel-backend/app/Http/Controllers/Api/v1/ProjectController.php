@@ -50,8 +50,9 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProjectRequest $request, Project $project)
-    {
+    public function update(UpdateProjectRequest $request, $id)
+    {   
+
         // A user with role == Student cannot update project
         $role = $request->user()->role;
         if ($role == "student" || $role == "Student"){
@@ -60,14 +61,24 @@ class ProjectController extends Controller
             ], 403);
         }
 
-        $project->update($request->all());
+        $project = Project::find($id);
+        
+        if(!$project){
+            return response()->json([
+                "message" => "resource not found"]
+            , 404);
+        }
+
+
+        $validated = $request->validated();
+        $project->update($validated);
         return new ProjectResource($project);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Project $project)
+    public function destroy($id)
     {
         // A user with role == Student cannot delete a project
         $role = auth()->user()->role;
@@ -77,7 +88,16 @@ class ProjectController extends Controller
             ], 403);
         }
 
+        $project = Project::find($id);
+        
+        if(!$project){
+            return response()->json([
+                "message" => "resource not found"]
+            , 404);
+        }
+
         $project->delete();
-        return response()->json(['message'=>"$project->title Deleted Successfully"]);
+        return response()->json(
+            ['message'=>"$project->title Deleted Successfully"]);
     }
 }

@@ -8,7 +8,9 @@ use App\Http\Resources\v1\UserResource;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\ValidationException;
 
 
@@ -25,11 +27,8 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
 
-        $token = $user->createToken($request->name)->plainTextToken;
-
         return response()->json([
             'user' => new UserResource($user),
-            'token' => $token,
             'message' => 'User registered successfully'
         ], 201);
     }
@@ -40,29 +39,33 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
             'password' => 'required|string|min:6',
         ]);
-        $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-        $user->tokens()->delete();
-        
-        $token = $user->createToken($user->name)->plainTextToken;
-        return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token,
-            'message' => 'Login successful'
-        ], 200);
 
+        if(Auth::attempt(['email' => $request->email, 'password' => $request->password], true)){
+            $request->session()->regenerate();
+
+            session(['user_id' => Auth::id()]);
+
+            session()->save();
+
+            return response()->json([
+                'user' => new UserResource(Auth::user()),
+                'message' => 'Login successful',
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Invalid credentials'
+        ], 401);
     }
 
     public function logout(Request $request){
-        $userName = $request->user()->name;
-        $request->user()->tokens()->delete();
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerate(); // Regenerate CSRF token
 
         return response()->json([
-            "message"=> "$userName logged out successfully"
-        ]);
+            'message' => 'Logged out successfully'
+        ], 200);
+
     }
 }

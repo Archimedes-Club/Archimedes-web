@@ -41,14 +41,15 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
+        const response = await fetch("http://localhost:8000/api/v1/projects", {
           method: "GET",
+          credentials: "include",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            Authorization: `Bearer ${apiToken}`,
           },
         });
+        console.log("response using fetch",response);
         const data = await response.json();
         if (Array.isArray(data.data)) {
           setProjects(data.data);

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import {login} from '../services/api/authServices';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,30 +15,10 @@ const Login: React.FC = () => {
       alert("Please enter email and password");
     }
     try {
-      // await getCsrfToken();
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
-        method: "POST",
-        // credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      if (response.status == 422) {
-        throw new Error("Invalid Login Credentials");
-      } else if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "Login Failed");
-      }
-
-      const data = await response.json();
-      console.log(data);
-      // Storin g the token in local storage
-      localStorage.setItem("authToken", data.token);
-
-      alert("Logged in as " + data.user.name);
-      window.location.reload();
+      const responseData = await login(email, password);
+      console.log(responseData);
+      alert("Logged in as " + responseData.user.name);
+      window.location.reload(); 
     } catch (error) {
       console.error("Error logging in:", error);
       alert(error);

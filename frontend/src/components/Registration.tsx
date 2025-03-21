@@ -2,13 +2,14 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Registration.css";
+import { registerUser } from "../services/api/authServices";
 
 const Registration: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    password_confirmation: "",
     phone: "",
     linkedin_url: "",
     role: "",
@@ -33,7 +34,7 @@ const Registration: React.FC = () => {
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     if (!formData.password.trim()) newErrors.password = "Password is required";
-    if (!formData.confirmPassword.trim())
+    if (!formData.password_confirmation.trim())
       newErrors.confirmPassword = "Confirm password is required";
     if (!formData.role) newErrors.role = "Role selection is required";
 
@@ -46,8 +47,8 @@ const Registration: React.FC = () => {
     // Password match validation
     if (
       formData.password &&
-      formData.confirmPassword &&
-      formData.password !== formData.confirmPassword
+      formData.password_confirmation &&
+      formData.password !== formData.password_confirmation
     ) {
       newErrors.confirmPassword = "Passwords do not match";
     }
@@ -72,29 +73,10 @@ const Registration: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          password_confirmation: formData.confirmPassword,
-          phone: formData.phone,
-          linkedin_url: formData.linkedin_url,
-          role: formData.role,
-        }),
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
+      const response = await registerUser(JSON.stringify(formData));
 
-      const data = await response.json();
+      const data = await response;
       alert("Registration successful!");
       navigate("/login");
     } catch (error) {
@@ -157,8 +139,8 @@ const Registration: React.FC = () => {
           </label>
           <input
             type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
+            name="password_confirmation"
+            value={formData.password_confirmation}
             onChange={handleChange}
             required
           />
@@ -202,8 +184,8 @@ const Registration: React.FC = () => {
             required
           >
             <option value="">Select a role</option>
-            <option value="Professor">Professor</option>
-            <option value="Student">Student</option>
+            <option value="professor">Professor</option>
+            <option value="student">Student</option>
           </select>
           {errors.role && <p className="error-message">{errors.role}</p>}
         </div>

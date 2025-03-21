@@ -2,11 +2,11 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ frontEnd-test ]
     paths:
       - 'laravel-backend/**'
   pull_request:
-    branches: [ main ]
+    branches: [ frontEnd-test ]
     paths:
       - 'laravel-backend/**'
 
@@ -18,7 +18,7 @@ jobs:
         image: mysql:8
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: archimedesdb
+          MYSQL_DATABASE: archimedesdb_testing
         ports:
           - 3306:3306
         options: >-
@@ -39,24 +39,38 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, bcmath, pdo_mysql
 
-      # Step 3: Install Composer dependencies
+      # Step 3: Cache Composer packages
+      - name: Cache Composer packages
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      # Step 4: Install Composer dependencies
       - name: Install Composer Dependencies
         working-directory: laravel-backend
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      # Step 4: Prepare backend environment using .env.ci
+      # Step 5: Set Directory Permissions
+      - name: Set Directory Permissions
+        working-directory: laravel-backend
+        run: chmod -R 777 storage bootstrap/cache
+
+      # Step 6: Prepare backend environment using .env.testing
       - name: Prepare Environment
         working-directory: laravel-backend
         run: |
-          cp .env.ci .env
+          cp .env.testing .env
           php artisan key:generate
 
-      # Step 5: Run migrations and seed the database
+      # Step 7: Run migrations and seed the database
       - name: Migrate and Seed Database
         working-directory: laravel-backend
         run: php artisan migrate --seed --env=testing
 
-      # Step 6: Run Laravel tests
+      # Step 8: Run Laravel tests
       - name: Run Backend Tests
         working-directory: laravel-backend
         run: php artisan test

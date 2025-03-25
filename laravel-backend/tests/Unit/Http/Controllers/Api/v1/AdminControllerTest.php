@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Http\Controllers\Api\v1;
 
-use App\Http\Controllers\Api\v1\AdminController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,6 +15,7 @@ class AdminControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Explicitly create an admin user with role "admin"
         $this->admin = User::factory()->create([
             'email' => 'admin@northeastern.edu',
             'role' => 'admin'
@@ -24,10 +24,11 @@ class AdminControllerTest extends TestCase
 
     public function test_get_all_users()
     {
-        // Create 3 test users
+        // Create 3 test users with a defined role (e.g., "student")
         for ($i = 0; $i < 3; $i++) {
             User::factory()->create([
-                'email' => "user{$i}@northeastern.edu"
+                'email' => "user{$i}@northeastern.edu",
+                'role'  => 'student'
             ]);
         }
         
@@ -42,7 +43,7 @@ class AdminControllerTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'user@northeastern.edu',
-            'role' => 'student'
+            'role'  => 'student'
         ]);
 
         $response = $this->actingAs($user)
@@ -57,13 +58,14 @@ class AdminControllerTest extends TestCase
     public function test_update_user()
     {
         $user = User::factory()->create([
-            'email' => 'test@northeastern.edu'
+            'email' => 'test@northeastern.edu',
+            'role'  => 'student'
         ]);
 
         $updateData = [
-            'name' => 'Updated Name',
-            'email' => 'updated@northeastern.edu',
-            'phone' => '9876543210',
+            'name'         => 'Updated Name',
+            'email'        => 'updated@northeastern.edu',
+            'phone'        => '9876543210',
             'linkedin_url' => 'https://linkedin.com/in/updated'
         ];
 
@@ -86,8 +88,8 @@ class AdminControllerTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'name' => 'Updated Name',
+            'id'    => $user->id,
+            'name'  => 'Updated Name',
             'email' => 'updated@northeastern.edu'
         ]);
     }
@@ -95,7 +97,7 @@ class AdminControllerTest extends TestCase
     public function test_update_nonexistent_user()
     {
         $updateData = [
-            'name' => 'Updated Name',
+            'name'  => 'Updated Name',
             'email' => 'updated@northeastern.edu'
         ];
 
@@ -111,7 +113,8 @@ class AdminControllerTest extends TestCase
     public function test_delete_user()
     {
         $user = User::factory()->create([
-            'email' => 'test@northeastern.edu'
+            'email' => 'test@northeastern.edu',
+            'role'  => 'student'
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -142,11 +145,12 @@ class AdminControllerTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'user@northeastern.edu',
-            'role' => 'student'
+            'role'  => 'student'
         ]);
 
         $targetUser = User::factory()->create([
-            'email' => 'target@northeastern.edu'
+            'email' => 'target@northeastern.edu',
+            'role'  => 'student'
         ]);
 
         $response = $this->actingAs($user)
@@ -161,4 +165,4 @@ class AdminControllerTest extends TestCase
             'id' => $targetUser->id
         ]);
     }
-} 
+}

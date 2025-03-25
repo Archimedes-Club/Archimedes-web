@@ -13,6 +13,7 @@ import AllProjects from "./components/AllProjects";
 import "./SidebarToggle";
 import Registration from "./components/Registration";
 import OngoingProjects from "./components/OngoingProjects";
+import ProjectDetail from "./components/ProjectDetail";
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -43,6 +44,12 @@ const App: React.FC = () => {
             ) : (
               <Navigate to="/login" />
             )
+          }
+        />
+        <Route
+          path="/projects/:projectId"
+          element={
+            isAuthenticated ? <ProjectDetail /> : <Navigate to="/login" />
           }
         />
         <Route path="*" element={<Navigate to="/" />} />

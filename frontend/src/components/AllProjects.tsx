@@ -31,7 +31,17 @@ const AllProjects: React.FC = () => {
   const isMobile = useMediaQuery("(max-width:768px)");
 
   const navigate = useNavigate();
+
+  const handleRowClick = (projectId: number) => {
+    navigate(`/projects/${projectId}`);
+  };
+
   const apiToken = localStorage.getItem("authToken");
+
+  // const handleRowClick = (project: Project) => {
+  //   setEditingProject({ ...project });
+  //   setIsEditPageOpen(true);
+  // };
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -218,6 +228,7 @@ const AllProjects: React.FC = () => {
             projects={projects}
             onEdit={editProject}
             onDelete={deleteProject}
+            onRowClick={handleRowClick}
           />
 
           <div className="view-more-container">

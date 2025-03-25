@@ -10,14 +10,12 @@ interface ProjectTableProps {
   projects: Project[];
   onEdit: (project: Project) => void;
   onDelete: (id: number) => void;
-  onRowClick: (id: number) => void;
 }
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
   projects,
   onEdit,
   onDelete,
-  onRowClick,
 }) => {
   return (
     <div className="table-container">
@@ -35,11 +33,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
         </thead>
         <tbody>
           {projects.map((project) => (
-            <tr
-              key={project.id}
-              onClick={() => onRowClick(project.id)}
-              className="clickable-row"
-            >
+            <tr key={project.id}>
               <td>{project.title}</td>
               <td>{project.description}</td>
               <td>{project.category}</td>
@@ -48,10 +42,10 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
               <td>{project.team_size}</td>
               <td>
                 <IconButton onClick={() => onEdit(project)}>
-                  <EditIcon style={{ color: "#6a11cb" }} />
+                  <EditIcon style={{ color: '#6a11cb' }}/>
                 </IconButton>
                 <IconButton onClick={() => onDelete(project.id)}>
-                  <DeleteIcon style={{ color: "#FF5733" }} />
+                  <DeleteIcon style={{ color: '#FF5733' }}/>
                 </IconButton>
               </td>
             </tr>

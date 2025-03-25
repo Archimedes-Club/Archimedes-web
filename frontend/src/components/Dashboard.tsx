@@ -28,20 +28,10 @@ const Dashboard: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
-  const isMobile = useMediaQuery("(max-width:768px)");
+  const isMobile = useMediaQuery('(max-width:768px)');
 
   const navigate = useNavigate();
-
-  const handleRowClick = (projectId: number) => {
-    navigate(`/projects/${projectId}`);
-  };
-
   const apiToken = localStorage.getItem("authToken");
-
-  // const handleRowClick = (project: Project) => {
-  //   setEditingProject({ ...project });
-  //   setIsEditPageOpen(true);
-  // };
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -217,33 +207,19 @@ const Dashboard: React.FC = () => {
       </IconButton>
 
       {/* Sidebar */}
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
-      />
+      <Sidebar isVisible={isSidebarVisible} onClose={() => setIsSidebarVisible(false)} />
 
       {/* Sidebar Overlay - only visible on mobile when sidebar is open */}
       {isMobile && isSidebarVisible && (
-        <div
-          className="sidebar-overlay visible"
-          onClick={() => setIsSidebarVisible(false)}
-        ></div>
+        <div className="sidebar-overlay visible" onClick={() => setIsSidebarVisible(false)}></div>
       )}
 
       {isLoading ? (
-        <div
-          className={`loading-container ${
-            isSidebarVisible && !isMobile ? "shifted" : ""
-          }`}
-        >
+        <div className={`loading-container ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
           Loading projects...
         </div>
       ) : !isCreatePageOpen && !isEditPageOpen ? (
-        <div
-          className={`main-content ${
-            isSidebarVisible && !isMobile ? "shifted" : ""
-          }`}
-        >
+        <div className={`main-content ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
           <div className="header">
             <h2>Welcome Prof. Lopez</h2>
             <IconButton>
@@ -258,14 +234,15 @@ const Dashboard: React.FC = () => {
             >
               Create a Project
             </button>
-            <button className="submit-btn">Submit a Project Idea</button>
+            <button className="submit-btn">
+              Submit a Project Idea
+            </button>
           </div>
 
           <ProjectTable
             projects={projects}
             onEdit={editProject}
             onDelete={deleteProject}
-            onRowClick={handleRowClick}
           />
 
           {/* <div className="view-more-container">
@@ -278,11 +255,7 @@ const Dashboard: React.FC = () => {
           </div> */}
         </div>
       ) : (
-        <div
-          className={`create-project-page ${
-            isSidebarVisible && !isMobile ? "shifted" : ""
-          }`}
-        >
+        <div className={`create-project-page ${isSidebarVisible && !isMobile ? 'shifted' : ''}`}>
           <div className="breadcrumb">
             Dashboard / {isEditPageOpen ? "Edit Project" : "Create Project"}
           </div>
@@ -298,11 +271,7 @@ const Dashboard: React.FC = () => {
               <input
                 type="text"
                 id="title"
-                value={
-                  isEditPageOpen && editingProject
-                    ? editingProject.title
-                    : newProject.title
-                }
+                value={isEditPageOpen && editingProject ? editingProject.title : newProject.title}
                 onChange={(e) =>
                   isEditPageOpen && editingProject
                     ? setEditingProject({
@@ -470,3 +439,5 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+

@@ -153,14 +153,6 @@
   font-size: 20px;
 }
 
-.clickable-row {
-  cursor: pointer;
-}
-
-.clickable-row:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
 /* Form Styles */
 .create-project-page {
   padding: 20px;

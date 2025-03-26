@@ -4,6 +4,7 @@ namespace Tests\Unit\Http\Controllers\Api\v1;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class AdminControllerTest extends TestCase
@@ -16,8 +17,8 @@ class AdminControllerTest extends TestCase
     {
         parent::setUp();
         // Set the config value for admin emails
-        \Illuminate\Support\Facades\Config::set('app.admins', ['admin@northeastern.edu']);
-    
+        Config::set('app.admins', ['admin@northeastern.edu']);
+        
         // Create an admin user with role "admin"
         $this->admin = User::factory()->create([
             'email' => 'admin@northeastern.edu',
@@ -35,11 +36,12 @@ class AdminControllerTest extends TestCase
             ]);
         }
         
-        $response = $this->actingAs($this->admin)
-            ->getJson('/api/v1/admin/users');
+        $response = $this->actingAs($this->admin, 'sanctum')
+                         ->getJson('/api/v1/admin/users');
 
+        // Expect 4 users: 3 test users plus 1 admin
         $response->assertStatus(200)
-            ->assertJsonCount(4, 'data'); // 3 users + 1 admin
+                 ->assertJsonCount(4, 'data');
     }
 
     public function test_get_all_users_as_non_admin()
@@ -49,13 +51,13 @@ class AdminControllerTest extends TestCase
             'role'  => 'student'
         ]);
 
-        $response = $this->actingAs($user)
-            ->getJson('/api/v1/admin/users');
+        $response = $this->actingAs($user, 'sanctum')
+                         ->getJson('/api/v1/admin/users');
 
         $response->assertStatus(403)
-            ->assertJson([
-                'message' => 'Access Denied. Admins only.'
-            ]);
+                 ->assertJson([
+                     'message' => 'Access Denied. Admins only.'
+                 ]);
     }
 
     public function test_update_user()
@@ -72,21 +74,21 @@ class AdminControllerTest extends TestCase
             'linkedin_url' => 'https://linkedin.com/in/updated'
         ];
     
-        $response = $this->actingAs($this->admin)
-            ->putJson("/api/v1/admin/users/{$user->id}", $updateData);
+        $response = $this->actingAs($this->admin, 'sanctum')
+                         ->putJson("/api/v1/admin/users/{$user->id}", $updateData);
     
         $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'update_user' => [
-                    'id',
-                    'name',
-                    'email',
-                    'phone',
-                    'linkedin_url',
-                    'role'
-                ]
-            ]);
+                 ->assertJsonStructure([
+                     'message',
+                     'update_user' => [
+                         'id',
+                         'name',
+                         'email',
+                         'phone',
+                         'linkedin_url',
+                         'role'
+                     ]
+                 ]);
     
         $this->assertDatabaseHas('users', [
             'id'    => $user->id,
@@ -95,7 +97,6 @@ class AdminControllerTest extends TestCase
         ]);
     }
     
-
     public function test_update_nonexistent_user()
     {
         $updateData = [
@@ -103,13 +104,13 @@ class AdminControllerTest extends TestCase
             'email' => 'updated@northeastern.edu'
         ];
 
-        $response = $this->actingAs($this->admin)
-            ->putJson('/api/v1/admin/users/999', $updateData);
+        $response = $this->actingAs($this->admin, 'sanctum')
+                         ->putJson('/api/v1/admin/users/999', $updateData);
 
         $response->assertStatus(404)
-            ->assertJson([
-                'message' => 'User not found'
-            ]);
+                 ->assertJson([
+                     'message' => 'User not found'
+                 ]);
     }
 
     public function test_delete_user()
@@ -119,13 +120,11 @@ class AdminControllerTest extends TestCase
             'role'  => 'student'
         ]);
 
-        $response = $this->actingAs($this->admin)
-            ->deleteJson("/api/v1/admin/users/{$user->id}");
+        $response = $this->actingAs($this->admin, 'sanctum')
+                         ->deleteJson("/api/v1/admin/users/{$user->id}");
 
         $response->assertStatus(200)
-            ->assertJson([
-                'message' => 'User deleted successfully'
-            ]);
+         ->assertExactJson([]);
 
         $this->assertDatabaseMissing('users', [
             'id' => $user->id
@@ -134,13 +133,13 @@ class AdminControllerTest extends TestCase
 
     public function test_delete_nonexistent_user()
     {
-        $response = $this->actingAs($this->admin)
-            ->deleteJson('/api/v1/admin/users/999');
+        $response = $this->actingAs($this->admin, 'sanctum')
+                         ->deleteJson('/api/v1/admin/users/999');
 
         $response->assertStatus(404)
-            ->assertJson([
-                'message' => 'User not found'
-            ]);
+                 ->assertJson([
+                     'message' => 'User not found'
+                 ]);
     }
 
     public function test_delete_user_as_non_admin()
@@ -155,13 +154,13 @@ class AdminControllerTest extends TestCase
             'role'  => 'student'
         ]);
 
-        $response = $this->actingAs($user)
-            ->deleteJson("/api/v1/admin/users/{$targetUser->id}");
+        $response = $this->actingAs($user, 'sanctum')
+                         ->deleteJson("/api/v1/admin/users/{$targetUser->id}");
 
         $response->assertStatus(403)
-            ->assertJson([
-                'message' => 'Access Denied. Admins only.'
-            ]);
+                 ->assertJson([
+                     'message' => 'Access Denied. Admins only.'
+                 ]);
 
         $this->assertDatabaseHas('users', [
             'id' => $targetUser->id

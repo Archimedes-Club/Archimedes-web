@@ -135,28 +135,29 @@ class UpdateUserRequestTest extends TestCase
 
     public function test_validation_fails_with_duplicate_email()
     {
-        // Create existing user
+       
         User::factory()->create([
-            'email' => 'test@northeastern.edu'
-        ]);
-
-        // Create data with duplicate email
-        $data = [
             'email' => 'test@northeastern.edu',
-            'phone' => '1234567890',
-            'linkedin_url' => 'https://linkedin.com/in/testuser'
+            'role'  => 'student'
+        ]);
+        
+        $data = [
+            'email'         => 'test@northeastern.edu',
+            'phone'         => '1234567890',
+            'linkedin_url'  => 'https://linkedin.com/in/testuser'
         ];
-
-        // Create request with data
+    
         $request = new UpdateUserRequest();
         $request->setMethod('PUT');
         $request->merge($data);
-
-        // Validate request
+    
+        // Validate the request
         $validator = validator($data, $request->rules());
-        $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('email', $validator->errors()->toArray());
+        $this->assertTrue($validator->fails(), 'Duplicate email should fail validation.');
+        $errors = $validator->errors()->toArray();
+        $this->assertArrayHasKey('email', $errors);
     }
+    
 
     public function test_validation_fails_with_invalid_phone()
     {

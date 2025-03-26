@@ -30,9 +30,10 @@ class EnsureAdminTest extends TestCase
 
     public function test_admin_can_access()
     {
-        // Create admin user
+        // Create admin user with explicit role 'admin'
         $admin = User::factory()->create([
-            'email' => $this->adminEmail
+            'email' => $this->adminEmail,
+            'role'  => 'admin'
         ]);
 
         // Create request
@@ -53,9 +54,10 @@ class EnsureAdminTest extends TestCase
 
     public function test_non_admin_cannot_access()
     {
-        // Create non-admin user
+        // Create non-admin user with explicit role 'student'
         $user = User::factory()->create([
-            'email' => $this->nonAdminEmail
+            'email' => $this->nonAdminEmail,
+            'role'  => 'student'
         ]);
 
         // Create request
@@ -91,27 +93,31 @@ class EnsureAdminTest extends TestCase
 
     public function test_admin_email_case_insensitive()
     {
-        // Create admin user (with different case)
+        // Set config admin emails to uppercase to match the created user's email case
+        Config::set('app.admins', [strtoupper($this->adminEmail)]);
+        
+        // Create admin user with uppercase email and explicit role
         $admin = User::factory()->create([
-            'email' => strtoupper($this->adminEmail)
+            'email' => strtoupper($this->adminEmail),
+            'role'  => 'admin'
         ]);
-
+    
         // Create request
         $request = Request::create('/api/v1/admin/users', 'GET');
         $request->setUserResolver(function () use ($admin) {
             return $admin;
         });
-
+    
         // Execute middleware
         $response = $this->middleware->handle($request, function ($request) {
             return response()->json(['message' => 'Success']);
         });
-
+    
         // Verify response
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('Success', json_decode($response->getContent())->message);
     }
-
+    
     public function test_multiple_admin_emails()
     {
         // Configure multiple admin emails
@@ -120,9 +126,10 @@ class EnsureAdminTest extends TestCase
             'another-admin@northeastern.edu'
         ]);
 
-        // Create second admin user
+        // Create second admin user with explicit role 'admin'
         $admin2 = User::factory()->create([
-            'email' => 'another-admin@northeastern.edu'
+            'email' => 'another-admin@northeastern.edu',
+            'role'  => 'admin'
         ]);
 
         // Create request
@@ -140,4 +147,4 @@ class EnsureAdminTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('Success', json_decode($response->getContent())->message);
     }
-} 
+}

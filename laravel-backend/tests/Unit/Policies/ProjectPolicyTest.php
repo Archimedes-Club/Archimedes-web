@@ -20,7 +20,9 @@ class ProjectPolicyTest extends TestCase
     {
         parent::setUp();
         $this->policy = new ProjectPolicy();
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->create([
+            'role' => 'student'
+        ]);
         $this->project = Project::factory()->create();
     }
 
@@ -61,7 +63,7 @@ class ProjectPolicyTest extends TestCase
 
     public function test_policy_accepts_user_and_project_parameters()
     {
-        // 测试所有方法都接受正确的参数类型
+        // Test that all policy methods accept correct parameter types.
         $this->assertIsBool($this->policy->viewAny($this->user));
         $this->assertIsBool($this->policy->view($this->user, $this->project));
         $this->assertIsBool($this->policy->create($this->user));
@@ -70,4 +72,4 @@ class ProjectPolicyTest extends TestCase
         $this->assertIsBool($this->policy->restore($this->user, $this->project));
         $this->assertIsBool($this->policy->forceDelete($this->user, $this->project));
     }
-} 
+}

@@ -14,9 +14,15 @@ class UserCollectionTest extends TestCase
     public function test_collection_contains_correct_data()
     {
         // Create multiple test users
-        $users = User::factory()->count(3)->create([
+        $users = User::factory()
+        ->count(3)
+        ->sequence(function ($sequence) {
+            return [
+                'email' => "test{$sequence->index}@northeastern.edu"
+            ];
+        })
+        ->create([
             'name' => 'Test User',
-            'email' => fn($sequence) => "test{$sequence->index}@northeastern.edu",
             'phone' => '1234567890',
             'linkedin_url' => 'https://linkedin.com/in/testuser',
             'role' => 'student'
@@ -60,9 +66,15 @@ class UserCollectionTest extends TestCase
     public function test_collection_handles_null_values()
     {
         // Create users with null values
-        $users = User::factory()->count(2)->create([
+        $users = User::factory()
+        ->count(2)
+        ->sequence(function ($sequence) {
+            return [
+                'email' => "test{$sequence->index}@northeastern.edu"
+            ];
+        })
+        ->create([
             'name' => 'Test User',
-            'email' => fn($sequence) => "test{$sequence->index}@northeastern.edu",
             'phone' => null,
             'linkedin_url' => null,
             'role' => 'student'
@@ -84,8 +96,9 @@ class UserCollectionTest extends TestCase
     public function test_collection_contains_all_required_fields()
     {
         // Create a test user
-        $user = User::factory()->create();
-
+        $user = User::factory()->create([
+            'role' => 'student' 
+        ]);
         // Create collection
         $collection = new UserCollection(collect([$user]));
 

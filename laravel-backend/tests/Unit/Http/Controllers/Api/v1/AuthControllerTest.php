@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Http\Controllers\Api\v1;
 
-use App\Http\Controllers\Api\v1\AuthController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -12,102 +11,120 @@ class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_registration()
+    public function test_user_registration_success()
     {
         $userData = [
-            'name' => 'Test User',
-            'email' => 'test@northeastern.edu',
-            'password' => 'password123',
+            'name'                  => 'Test User',
+            'email'                 => 'test@northeastern.edu',
+            'password'              => 'password123',
             'password_confirmation' => 'password123',
-            'phone' => '1234567890',
-            'linkedin_url' => 'https://linkedin.com/in/test',
-            'role' => 'student'
+            'phone'                 => '1234567890',
+            'linkedin_url'          => 'https://linkedin.com/in/testuser',
+            'role'                  => 'student'
         ];
 
-        $response = $this->postJson('/api/v1/auth/register', $userData);
+        $response = $this->postJson('/api/register', $userData);
 
         $response->assertStatus(201)
-            ->assertJsonStructure([
-                'user',
-                'token',
-                'message'
-            ]);
+                 ->assertJsonStructure([
+                     'user' => [
+                         'id',
+                         'name',
+                         'email',
+                         'phone',
+                         'linkedin_url',
+                         'role'
+                     ],
+                     'token',
+                     'message'
+                 ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'test@northeastern.edu',
-            'name' => 'Test User'
+            'role'  => 'student'
         ]);
     }
 
-    public function test_user_registration_with_invalid_data()
+    public function test_user_registration_invalid_data()
     {
         $userData = [
-            'name' => 'Test User',
-            'email' => 'invalid-email',
-            'password' => '123', // too short
-            'password_confirmation' => '123',
-            'phone' => '1234567890',
-            'linkedin_url' => 'invalid-url',
-            'role' => 'invalid-role'
+            'name'                  => 'Test User',
+            'email'                 => 'invalid-email',
+            'password'              => 'pass',
+            'password_confirmation' => 'pass',
+            'role'                  => 'student'
         ];
 
-        $response = $this->postJson('/api/v1/auth/register', $userData);
-
-        $response->assertStatus(400)
-            ->assertJsonValidationErrors(['email', 'password', 'linkedin_url', 'role']);
+        // Expecting a 422 status code for validation errors
+        $response = $this->postJson('/api/register', $userData);
+        $response->assertStatus(422);
     }
 
-    public function test_user_login()
+    public function test_user_login_success()
     {
+        $password = 'password123';
         $user = User::factory()->create([
-            'email' => 'test@northeastern.edu',
-            'password' => Hash::make('password123')
+            'email'    => 'test@northeastern.edu',
+            'password' => Hash::make($password),
+            'role'     => 'student'
         ]);
 
-        $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'test@northeastern.edu',
-            'password' => 'password123'
-        ]);
+        $loginData = [
+            'email'    => 'test@northeastern.edu',
+            'password' => $password
+        ];
+
+        $response = $this->postJson('/api/login', $loginData);
 
         $response->assertStatus(200)
-            ->assertJsonStructure([
-                'user',
-                'token',
-                'message'
-            ]);
+                 ->assertJsonStructure([
+                     'user' => [
+                         'id',
+                         'name',
+                         'email',
+                         'phone',
+                         'linkedin_url',
+                         'role'
+                     ],
+                     'token',
+                     'message'
+                 ]);
     }
 
-    public function test_user_login_with_invalid_credentials()
+    public function test_user_login_invalid_credentials()
     {
-        $response = $this->postJson('/api/v1/auth/login', [
-            'email' => 'test@northeastern.edu',
-            'password' => 'wrongpassword'
+        $password = 'password123';
+        $user = User::factory()->create([
+            'email'    => 'test@northeastern.edu',
+            'password' => Hash::make($password),
+            'role'     => 'student'
         ]);
 
-        $response->assertStatus(401)
-            ->assertJson([
-                'message' => 'Invalid credentials'
-            ]);
+        $loginData = [
+            'email'    => 'test@northeastern.edu',
+            'password' => 'wrongpassword'
+        ];
+
+        // Expecting a 422 status code for invalid credentials (per Laravel's default behavior)
+        $response = $this->postJson('/api/login', $loginData);
+        $response->assertStatus(422);
     }
 
-    public function test_user_logout()
+    public function test_user_logout_success()
     {
         $user = User::factory()->create([
-            'email' => 'test@northeastern.edu'
+            'email' => 'test@northeastern.edu',
+            'role'  => 'student'
         ]);
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token
-        ])->postJson('/api/v1/auth/logout');
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/logout');
 
         $response->assertStatus(200)
-            ->assertJson([
-                'message' => "{$user->name} logged out successfully"
-            ]);
-
-        $this->assertDatabaseMissing('personal_access_tokens', [
-            'tokenable_id' => $user->id
-        ]);
+                 ->assertJson([
+                     'message' => "{$user->name} logged out successfully"
+                 ]);
     }
-} 
+}

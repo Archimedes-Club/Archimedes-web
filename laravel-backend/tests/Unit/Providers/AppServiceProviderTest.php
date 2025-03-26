@@ -36,14 +36,14 @@ class AppServiceProviderTest extends TestCase
     public function test_register_method_can_be_called()
     {
         $this->provider->register();
-        // 如果没有抛出异常，测试通过
+
         $this->assertTrue(true);
     }
 
     public function test_boot_method_can_be_called()
     {
         $this->provider->boot();
-        // 如果没有抛出异常，测试通过
+
         $this->assertTrue(true);
     }
 

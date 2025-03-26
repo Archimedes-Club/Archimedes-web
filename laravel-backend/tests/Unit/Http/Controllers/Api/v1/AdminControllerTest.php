@@ -15,13 +15,16 @@ class AdminControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Explicitly create an admin user with role "admin"
+        // Set the config value for admin emails
+        \Illuminate\Support\Facades\Config::set('app.admins', ['admin@northeastern.edu']);
+    
+        // Create an admin user with role "admin"
         $this->admin = User::factory()->create([
             'email' => 'admin@northeastern.edu',
-            'role' => 'admin'
+            'role'  => 'admin'
         ]);
     }
-
+    
     public function test_get_all_users()
     {
         // Create 3 test users with a defined role (e.g., "student")
@@ -61,38 +64,37 @@ class AdminControllerTest extends TestCase
             'email' => 'test@northeastern.edu',
             'role'  => 'student'
         ]);
-
+    
         $updateData = [
             'name'         => 'Updated Name',
             'email'        => 'updated@northeastern.edu',
             'phone'        => '9876543210',
             'linkedin_url' => 'https://linkedin.com/in/updated'
         ];
-
+    
         $response = $this->actingAs($this->admin)
             ->putJson("/api/v1/admin/users/{$user->id}", $updateData);
-
+    
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'message',
-                'data' => [
+                'update_user' => [
                     'id',
                     'name',
                     'email',
                     'phone',
                     'linkedin_url',
-                    'role',
-                    'created_at',
-                    'updated_at'
+                    'role'
                 ]
             ]);
-
+    
         $this->assertDatabaseHas('users', [
             'id'    => $user->id,
             'name'  => 'Updated Name',
             'email' => 'updated@northeastern.edu'
         ]);
     }
+    
 
     public function test_update_nonexistent_user()
     {

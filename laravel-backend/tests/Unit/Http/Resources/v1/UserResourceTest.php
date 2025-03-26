@@ -66,8 +66,10 @@ class UserResourceTest extends TestCase
     public function test_resource_contains_all_required_fields()
     {
         // Create a test user
-        $user = User::factory()->create();
-
+        $user = User::factory()->create([
+            'role' => 'student'
+        ]);
+        
         // Create resource
         $resource = new UserResource($user);
 

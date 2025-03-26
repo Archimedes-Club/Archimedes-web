@@ -1,0 +1,40 @@
+name: Frontend CI
+
+# Trigger the workflow only when there are changes in the "frontend" folder on the main branch.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  frontend-tests:
+    # Use the latest Ubuntu virtual environment provided by GitHub Actions.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the entire repository.
+      - uses: actions/checkout@v2
+
+      # Step 2: Setup the Node.js environment.
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      # Step 3: Install frontend dependencies.
+      # The "working-directory" specifies that these commands are executed inside the "frontend" folder.
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm install
+
+      # Step 4: Run frontend tests.
+      # The extra flags ensure that the test runner does not enter watch mode.
+      - name: Run Frontend Tests
+        working-directory: frontend
+        run: npm test -- --watchAll=false
+

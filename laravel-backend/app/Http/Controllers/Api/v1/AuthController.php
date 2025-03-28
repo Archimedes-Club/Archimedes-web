@@ -27,6 +27,10 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
 
+
+        // $user->sendEmailVerificationNotification();
+        event(new Registered($user));
+
         return response()->json([
             'user' => new UserResource($user),
             'message' => 'User registered successfully'

@@ -7,17 +7,18 @@ import {
 } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
-import Home from "./components/Home"; // Import Home component
-import { useAuth } from "./hooks/useAuth"; // Custom hook for authentication
+import Home from "./components/Home"; // Import Home component 
 import AllProjects from "./components/AllProjects";
 import "./SidebarToggle";
 import Registration from "./components/Registration";
 import OngoingProjects from "./components/OngoingProjects";
+import { useAuth } from "./hooks/useAuth";
+import { VerifyEmail } from "./components/VerifyEmail";
+import ProtectedRoute from "./ProtectedRoute";
 import ProjectDetail from "./components/ProjectDetail";
 
-const App: React.FC = () => {
-  const { isAuthenticated } = useAuth();
 
+const App: React.FC = () => {
   return (
     <Router>
       <Routes>
@@ -26,36 +27,75 @@ const App: React.FC = () => {
 
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
+          element={
+            <PublicRoute>
+              <Login/>
+            </PublicRoute>
+          }
         />
         <Route
           path="/dashboard"
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+          element={
+            <ProtectedRoute>
+              <Dashboard/>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/all-projects"
-          element={isAuthenticated ? <AllProjects /> : <Navigate to="/login" />}
+          element={
+            <ProtectedRoute>
+              <AllProjects/>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/ongoingprojects"
           element={
-            isAuthenticated ? (
-              <OngoingProjects projects={[]} />
-            ) : (
-              <Navigate to="/login" />
-            )
+            <ProtectedRoute>
+              <OngoingProjects/>
+              </ProtectedRoute>
           }
         />
         <Route
-          path="/projects/:projectId"
+          path= "/projects/:projectId"
           element={
-            isAuthenticated ? <ProjectDetail /> : <Navigate to="/login" />
+            <ProtectedRoute>
+              <ProjectDetail/>
+              </ProtectedRoute>
           }
+        />
+        <Route 
+        path="/verify-email" 
+        element={
+          <ProtectedRoute requireVerified = {false}>
+            <VerifyEmail/>
+          </ProtectedRoute>
+        }
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
+};
+
+
+interface Props {
+  children: React.ReactNode;
+}
+
+const PublicRoute: React.FC<Props> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 export default App;

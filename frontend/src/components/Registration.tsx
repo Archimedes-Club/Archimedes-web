@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Registration.css";
-import { registerUser } from "../services/api/authServices";
+import { login, registerUser } from "../services/api/authServices";
 
 const Registration: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -78,7 +78,11 @@ const Registration: React.FC = () => {
 
       const data = await response;
       alert("Registration successful!");
-      navigate("/login");
+
+      await login(formData.email, formData.password);
+
+      navigate("/verify-email");
+
     } catch (error) {
       console.error("Error registering:", error);
       alert(error);

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone')->nullable();
             $table->string('linkedin_url')->nullable();
-            $table->string('role');
+            $table->string('role')->default("student");
             $table->rememberToken();
             $table->timestamps();
         });

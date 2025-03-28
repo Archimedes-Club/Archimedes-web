@@ -86,7 +86,7 @@ export const login = async (email, password) => {
 // Logout api call, which clears the cookies
 export const logout = async () => {
     try {
-        const response = await api.post('api/v1/logout' );
+        const response = await api.post('api/logout' );
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -103,10 +103,33 @@ export const getUser = async() => {
     }
 }
 
-
+/**
+ * Registers user with userData as params
+ * @param userData 
+ * @returns response of the user data and message
+ */
 export const registerUser = async(userData) => {
   try {
     const response = await api.post("api/register", userData);
+    return response;
+  } catch (error) {
+    handleApiError(error);
+  }
+}
+
+// Check if user is authenticated and email is verified
+export const authCheck = async() => {
+  try {
+    const response = await api.get('api/auth-status');
+    return response.data;
+  } catch (error) {
+    handleApiError(error);
+  }
+}
+
+export const emailVerification = async() =>{
+  try {
+    const response = await api.post('api/email/verification-notification');
     return response;
   } catch (error) {
     handleApiError(error);

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+
 // use Illuminate\Session\Middleware\StartSession;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
@@ -32,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class, // ✅ Start session
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             ]);
+    })
+    ->withSchedule(function (Schedule $schedule){
+        $schedule->command('users:delete-unverified')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

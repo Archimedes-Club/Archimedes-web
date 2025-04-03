@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\v1\AdminController;
 use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\ProjectMembershipController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,7 +16,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     // Project Model Routes
     Route::apiResource('projects', ProjectController::class);
 
-    // User Routes
+    // User Data Manipulation Routes
     Route::get('/user', [UserController::class, 'get']);
 
     Route::put('/user',[UserController::class, 'update']);
@@ -23,6 +24,33 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::patch('/user',[UserController::class, 'update']);
 
     Route::delete('/user', [UserController::class,'delete']);
+
+    /**
+     * Project Membership Routes
+    */
+    // Get all the membership details 
+    Route::get('/project_memberships', [ProjectMembershipController::class, 'index']);
+
+    //Get all the projects that the authenticated user is enrolled to
+    Route::get('/project_memberships_user', [ProjectMembershipController::class, 'getUserProjects']);
+
+    // Get all the projects of the users with user_id
+    Route::get('/project_memberships_user/{user_id}', [ProjectMembershipController::class, 'getProjectsByUserId']);
+
+    // Add user to project
+    Route::post('/project_memberships', [ProjectMembershipController::class, 'addUserToProject']);
+
+    // Get the project_membership by id
+    Route::get('/project_memberships/{id}', [ProjectMembershipController::class, 'show']);
+
+    // Update Project Membership by ID 
+    Route::put('/project_memberships/{id}', [ProjectMembershipController::class, 'updateById']);
+
+    //Update Project Membership by finding one using the foriegn keys in request body
+    Route::put('/project_memberships', [ProjectMembershipController::class, 'updateByPivot']);
+
+    // Remove the project membership between a project and user by forign keys
+    Route::delete('/project_memberships', [ProjectMembershipController::class, 'removeUserFromProject']);
 });
 
 Route::post('/logout',[AuthController::class, 'logout'])->middleware(['auth:sanctum']);

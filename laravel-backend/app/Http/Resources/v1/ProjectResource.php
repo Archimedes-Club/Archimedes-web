@@ -14,7 +14,7 @@ class ProjectResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $projectData = [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
@@ -24,5 +24,15 @@ class ProjectResource extends JsonResource
             'team_size' => $this->team_size,
             'summary' => "$this->title is lead by $this->team_lead",
         ];
+
+        if ($this->pivot){
+            $projectData['membership'] = [
+                'user_id' => $this->pivot->user_id,
+                'role' => $this->pivot->role,
+                'status' => $this->pivot->status,
+                'user_email' => $this->pivot->user_email
+            ];
+        }
+        return $projectData;
     }
 }

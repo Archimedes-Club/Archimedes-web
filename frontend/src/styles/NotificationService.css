@@ -1,0 +1,12 @@
+.notification-icon {
+    font-size: 26px !important;
+  }
+  
+  .header, .project-header-actions {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+  }
+  

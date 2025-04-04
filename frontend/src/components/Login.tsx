@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {login} from '../services/api/authServices';
+import { login } from "../services/api/authServices";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -16,12 +16,16 @@ const Login: React.FC = () => {
     }
     try {
       const responseData = await login(email, password);
-      console.log(responseData);
+      // console.log(responseData);
+      localStorage.setItem("userRole", responseData.user.role); // Store role (professor/student)
+      localStorage.setItem("userName", responseData.user.name); // Store user name
       alert("Logged in as " + responseData.user.name);
-      window.location.reload(); 
+      // window.location.reload();
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error logging in:", error);
-      alert(error);
+      // alert(error);
+      setError("Invalid email or password");
     }
   };
 

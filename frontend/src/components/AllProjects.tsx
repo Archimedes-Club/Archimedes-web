@@ -9,7 +9,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import "../styles/DashboardMain.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { getProjects, getProjectWithID, createProject, putProject, patchProject, deleteProjectWithID } from "../services/api/projectServices";
+import {
+  getProjects,
+  getProjectWithID,
+  createProject,
+  putProject,
+  patchProject,
+  deleteProjectWithID,
+} from "../services/api/projectServices";
 
 const AllProjects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -101,7 +108,7 @@ const AllProjects: React.FC = () => {
         category: "Web",
         status: "",
         team_size: 1,
-        team_lead: "Abhinav", 
+        team_lead: "Abhinav",
       });
       setIsCreatePageOpen(false);
     } catch (error) {
@@ -148,7 +155,10 @@ const AllProjects: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await putProject(editingProject.id, JSON.stringify(editingProject));
+      const response = await putProject(
+        editingProject.id,
+        JSON.stringify(editingProject)
+      );
       // if (!response) {
       //   const errorData = await response.json();
       //   console.error("Server Error:", errorData);
@@ -224,12 +234,12 @@ const AllProjects: React.FC = () => {
             <button className="submit-btn">Submit a Project Idea</button>
           </div>
 
-          <ProjectTable
+          {/* <ProjectTable
             projects={projects}
-            onEdit={editProject}
-            onDelete={deleteProject}
-            onRowClick={handleRowClick}
-          />
+            // onEdit={editProject}
+            // onDelete={deleteProject}
+            // onRowClick={handleRowClick}
+          /> */}
 
           <div className="view-more-container">
             <button

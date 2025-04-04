@@ -8,7 +8,7 @@ const api = axios.create({
     withCredentials: true,
     headers:{
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 })
 
@@ -16,10 +16,11 @@ const api = axios.create({
 // Get all the projects
 export const getProjects = async() =>{
     try{
-        const response = api.get("api/v1/projects");
-        return response;
+        const response = await api.get("api/v1/projects");
+        return response.data;
     }catch(error){
         handleApiError(error);
+        throw error;
     }
 }
 
@@ -91,3 +92,5 @@ export const deleteProjectWithID = async (id) =>{
         handleApiError(error);
     }
 }
+
+

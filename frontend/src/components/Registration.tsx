@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Registration.css";
@@ -73,16 +72,16 @@ const Registration: React.FC = () => {
     }
 
     try {
-
       const response = await registerUser(JSON.stringify(formData));
 
-      const data = await response;
+      // const data = await response;
+      localStorage.setItem("userRole", formData.role); // Store role (professor/student)
+      localStorage.setItem("userName", formData.name); // Store user name
       alert("Registration successful!");
 
       await login(formData.email, formData.password);
 
       navigate("/verify-email");
-
     } catch (error) {
       console.error("Error registering:", error);
       alert(error);

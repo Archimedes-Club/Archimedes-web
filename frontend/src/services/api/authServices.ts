@@ -110,6 +110,7 @@ export const getUser = async() => {
  */
 export const registerUser = async(userData) => {
   try {
+    await getCsrfToken();
     const response = await api.post("api/register", userData);
     return response;
   } catch (error) {

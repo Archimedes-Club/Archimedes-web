@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\ProjectController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
-
 // Routes that are allowed to Authenicated Users
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'verified']], function(){
 
@@ -37,15 +36,15 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     // Get all the projects of the users with user_id
     Route::get('/project_memberships_user/{user_id}', [ProjectMembershipController::class, 'getProjectsByUserId']);
 
-    // Add user to project
-    Route::post('/project_memberships', [ProjectMembershipController::class, 'addUserToProject']);
+    // Request to join a project 
+    Route::post('/project_memberships/request', [ProjectMembershipController::class, 'requestToJoinProject']);
 
-    // Get the project_membership by id
-    Route::get('/project_memberships/{id}', [ProjectMembershipController::class, 'show']);
+    // Approve the join request send by user (can only be done by the lead professor)
+    Route::put('/project_memberships/approve', [ProjectMembershipController::class, 'approveRequest']);    
 
-    // Update Project Membership by ID 
-    Route::put('/project_memberships/{id}', [ProjectMembershipController::class, 'updateById']);
-
+    // Reject the join request send by user (can only be done by the lead professor)
+    Route::put('/project_memberships/reject', [ProjectMembershipController::class, 'rejectRequest']);  
+   
     //Update Project Membership by finding one using the foriegn keys in request body
     Route::put('/project_memberships', [ProjectMembershipController::class, 'updateByPivot']);
 
@@ -60,7 +59,6 @@ Route::post('/register',[AuthController::class, 'register']);
 
 // Login route
 Route::post('/login',[AuthController::class, 'login']);
-
 
 // Route to check if the session data
 Route::get('/debug-session', function (Request $request) {
@@ -106,6 +104,7 @@ Route::post('/email/verification-notification', function (Request $request) {
  * ADMIN Routes
  */
 Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'auth.admin']], function(){
+    
     Route::get('/', function() {
         return "You're an Admin";
     });
@@ -117,5 +116,11 @@ Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v
     Route::patch('/users/{id}', [AdminController::class,'updateUser']);
     
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+
+    // Add user to project
+    Route::post('/project_memberships', [ProjectMembershipController::class, 'addUserToProject']);
+
+    // Update Project Membership by ID 
+    Route::put('/project_memberships/{id}', [ProjectMembershipController::class, 'updateById']);
 
 });

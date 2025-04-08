@@ -33,8 +33,24 @@ class ProjectController extends Controller
                 "message" => "You're not authorized to perform this action"
             ], 403);
         }
-        return new ProjectResource(Project::create($request->all()));
+        $data = $request->all();
+        $user = $request->user();
+        $data['team_lead'] = $user->name;
 
+        // Create new project, with project_lead attribute set to user(professor)'s name
+        $project = new ProjectResource(Project::create($data));
+        
+        // Create a new project_membership with role as 'lead' and status as 'active'
+        $user->projects()->attach($project->id, [
+            'role' => 'lead',
+            'status' => 'active',
+            'user_email' => $user->email
+        ]);
+
+        return response()->json([
+            'message' => "Project created successfully and $user->name is the lead for projec",
+            'data' => $project
+        ]);
     }
 
     /**

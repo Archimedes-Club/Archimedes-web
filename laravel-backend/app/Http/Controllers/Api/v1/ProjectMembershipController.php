@@ -11,6 +11,8 @@ use App\Http\Resources\v1\ProjectMembershipResource;
 use App\Http\Resources\v1\ProjectResource;
 use App\Models\ProjectMembership;
 use App\Models\User;
+use App\Models\Project;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -47,6 +49,146 @@ class ProjectMembershipController extends Controller
     }
 
     /**
+     * Request to join a project be an authenticated user
+     */
+    public function requestToJoinProject(Request $request){
+        $request->validate([
+            'project_id' => 'required|exists:projects,id'
+        ]);
+        $user = $request->user();
+
+        //prevent duplicates and lead requests
+        $alreadyRegistered = $user->projects()
+                                    ->where('project_id', $request->project_id)
+                                    ->withPivot('role')
+                                    ->first();
+        if ($alreadyRegistered){
+            $role = $alreadyRegistered->pivot->role;
+            $message = "user already requested or already a member of the project";
+            if ($role == 'lead'){
+                $message = "Project Lead cannot request to join a project";
+            }
+            return response()->json([
+                'message' => $message,
+                'role' => $role
+            ],  409);
+        }
+
+        // Creat project membership with role as 'member' and status as 'pending'
+        $user->projects()->attach($request->project_id,[
+            'role' => 'member',
+            'status' => 'pending',
+            'user_email' => $user->email
+        ]);
+
+        return response()->json([
+            'message' => 'request to join project sent successfully',
+        ]);
+    }
+
+
+    /**
+     * Approve the request to join project (can only done by the professor who's the lead of the project)
+     * and the lead professor has to be logged in ($user is taken from auth), 
+     * The user_id of who sent the request_to_join should be sent in request body
+    */
+    public function approveRequest(Request $request){
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'project_id' => 'required|exists:projects,id'
+        ]);
+        //Get the project 
+        $project = Project::findOrNew($request->project_id);
+
+        // Check if a project_membership with the auth user as lead to the project is present
+        $authUser = $request->user();
+        $isLead = $authUser->projects()
+                            ->where('project_id', $request->project_id)
+                            ->wherePivot('role', 'lead')
+                            ->exists();
+    
+        // Return unauthorized error if the auth user is not a lead
+        if (!$isLead || $authUser->name !== $project->team_lead){
+            return response()->json([
+                'message' => "The user is not authenticated to perform this action"
+            ], 403);
+        }
+
+        $membership = ProjectMembership::where('user_id', $request->user_id)
+                                        ->where('project_id', $request->project_id)
+                                        ->first();
+
+        if (!$membership){
+            return response()->json([
+                "message" => "Join request not found. Please check if the fields are valid"
+            ], 404);
+        }else if ($membership->status == "active"){
+            return response()->json([
+                "message" => "User is already an approved/active member of the project"
+            ]);
+        }
+
+        $membership->update(['status' => 'active']);
+        return response()->json([
+            'message' => 'Request approved.'
+        ]);
+    }
+
+
+    /**
+     * Reject the request to join project (can only done by the professor who's the lead of the project)
+     * and the lead professor has to be logged in ($user is taken from auth), 
+     * The user_id of who sent the request_to_join should be sent in request body
+    */
+    public function rejectRequest(Request $request){
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'project_id' => 'required|exists:projects,id'
+        ]);
+
+        //Get the project 
+        $project = Project::findOrNew($request->project_id);
+
+        // Check if a project_membership with the auth user as lead to the project is present
+        $authUser = $request->user();
+        $isLead = $authUser->projects()
+                            ->where('project_id', $request->project_id)
+                            ->wherePivot('role', 'lead')
+                            ->exists();
+    
+        // Return unauthorized error if the auth user is not a lead
+        if (!$isLead || $authUser->name !== $project->team_lead){
+            return response()->json([
+                'message' => "The user is not authenticated to perform this action"
+            ], 403);
+        }
+
+        $membership = ProjectMembership::where('user_id', $request->user_id)
+                                        ->where('project_id', $request->project_id)
+                                        ->first();
+
+        if (!$membership){
+            return response()->json([
+                "message" => "Join request not found. Please check if the fields are valid"
+            ], 404);
+        }else if ($membership->status == "active"){
+            return response()->json([
+                "message" => "User is already an active member of the project. If you want to remove the user from project please use appropriate requsest to remove the user"
+            ]);
+        }
+
+        // Delete the membership with requested user and project
+        DB::table('project_memberships')
+            ->where('user_id', $request->user_id)
+            ->where('project_id', $request->project_id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Request rejected.'
+        ]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(ProjectMembership $project_Membership)
@@ -60,7 +202,6 @@ class ProjectMembershipController extends Controller
      */
     public function updateById(UpdateProject_MembershipRequest $request, ProjectMembership $project_Membership)
     {
-        //
         $data = $request->validated();
         $project_Membership->update($data);
         return response()->json([
@@ -112,7 +253,31 @@ class ProjectMembershipController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Check if a project_membership with the auth user as lead to the project is present
+        $authUser = $request->user();
+        $isLead = $authUser->projects()
+                            ->where('project_id', $request->project_id)
+                            ->wherePivot('role', 'lead')
+                            ->exists();
+    
+        // Return unauthorized error if the auth user is not a lead
+        if ($authUser->id != $request->user_id & !$isLead){
+            return response()->json([
+                'message' => "The user is not authenticated to perform this action"
+            ], 403);
+        }
         $user = User::find($request->user_id);
+
+        $projectMembershpip= ProjectMembership::where('project_id', $request->project_id)
+                                            ->where('role', 'lead')
+                                            ->first();
+
+        if ($request->user_id == $projectMembershpip->user_id){
+            return response()->json([
+                'message' => "The project lead cannot remove self from project. Please assign another leader and then try again"
+            ], 422);
+        }
+
         $user->projects()->detach($request->project_id);
 
         return response()->json(['message' => 'User removed from project successfully.']);
@@ -141,4 +306,5 @@ class ProjectMembershipController extends Controller
         $projects = $user->projects()->withPivot('role', 'status')->get();
         return response()->json(ProjectResource::collection($projects));
     }
+
 }

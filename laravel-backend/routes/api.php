@@ -36,6 +36,9 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     // Get all the projects of the users with user_id
     Route::get('/project_memberships_user/{user_id}', [ProjectMembershipController::class, 'getProjectsByUserId']);
 
+    // Get all the members in the project
+    Route::get('/project_memberships/members',[ProjectMembershipController::class, 'getProjectMembers']);
+
     // Request to join a project 
     Route::post('/project_memberships/request', [ProjectMembershipController::class, 'requestToJoinProject']);
 

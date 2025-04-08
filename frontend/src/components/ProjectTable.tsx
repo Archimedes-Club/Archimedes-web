@@ -13,7 +13,7 @@ import "../styles/DashboardMain.css";
 
 interface ProjectTableProps {
   projects: Project[];
-  onJoinRequest: (projectId: number, skills: string) => void;
+  onJoinRequest: (projectId: number, skills: string, projectLead) => void;
 }
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -24,10 +24,12 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   const [skills, setSkills] = useState<string>("");
   const [requestedProjects, setRequestedProjects] = useState<number[]>([]);
+  const [teamLead, setTeamLead] = useState<string>("");
 
-  const handleOpenDialog = (projectId: number, event: React.MouseEvent) => {
+  const handleOpenDialog = (projectId: number, project_lead: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setCurrentProjectId(projectId);
+    setTeamLead(project_lead);
     setOpenDialog(true);
   };
 
@@ -39,7 +41,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
 
   const handleSubmit = () => {
     if (currentProjectId && skills.trim()) {
-      onJoinRequest(currentProjectId, skills);
+      onJoinRequest(currentProjectId, skills, teamLead);
       setRequestedProjects([...requestedProjects, currentProjectId]);
       handleCloseDialog();
     }
@@ -72,7 +74,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={(e) => handleOpenDialog(project.id, e)}
+                  onClick={(e) => handleOpenDialog(project.id, project.team_lead, e)}
                   disabled={requestedProjects.includes(project.id)}
                 >
                   {requestedProjects.includes(project.id)

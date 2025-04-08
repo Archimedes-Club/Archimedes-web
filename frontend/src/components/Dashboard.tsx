@@ -14,6 +14,9 @@ import {
   putProject,
   // deleteProjectWithID,
 } from "../services/api/projectServices";
+import{
+  joinProjectRequest,
+} from "../services/api/projectMembershipServices";
 import { getUser } from "../services/api/authServices";
 import { NotificationComponent } from "./NotificationService";
 
@@ -175,25 +178,35 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleJoinRequest = async (projectId: number, skills: string) => {
+  const handleJoinRequest = async (projectId: number, skills: string, projectLead: string) => {
     try {
       // You can implement the actual API call here to send the join request
       console.log(
         `Join request for project ${projectId} with skills: ${skills}`
       );
 
-      // Find the project to get the team lead
-      const project = projects.find((p) => p.id === projectId);
+      const data = {
+        project_id: projectId
+      }
+
+      const response = await joinProjectRequest(data);
+      
+      if (response?.status != 200){
+        console.log(response?.data.message);
+      }
+
+      console.log(response);
 
       // For now, just show an alert
       alert(
         `Join request sent to ${
-          project?.team_lead || "project lead"
+          projectLead || "project lead"
         } with skills: ${skills}`
       );
     } catch (error) {
+
       console.error("Error sending join request:", error);
-      alert("Failed to send join request. Please try again.");
+      alert(error);
     }
   };
 

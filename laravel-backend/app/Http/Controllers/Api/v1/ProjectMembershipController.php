@@ -317,4 +317,29 @@ class ProjectMembershipController extends Controller
         );
     }
 
+    /**
+     * Get all the join requests of recieved by authenticated professor from all the projects
+     */
+    public function getPendingRequests(Request $request){
+        $user = $request->user();
+
+        $project_leading = $user->projects()->wherePivot('role','lead')->get();
+
+        $returnData = [];
+        
+        foreach ($project_leading as $project) {
+            $pending_memberships = new ProjectMembershipCollection(ProjectMembership::where('project_id', $project->id)
+                                                    ->where('status', 'pending')
+                                                    ->get()
+                                                    ->keyBy('user_id')); // Optional: to get the structure you showed
+    
+            // Merge into returnData
+            foreach ($pending_memberships as $membership) {
+                $returnData[$membership->user_id] = $membership;
+            }
+        }
+
+        return response()->json($returnData
+        );
+    }
 }

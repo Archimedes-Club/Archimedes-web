@@ -43,14 +43,16 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::post('/project_memberships/request', [ProjectMembershipController::class, 'requestToJoinProject']);
 
     // Approve the join request send by user (can only be done by the lead professor)
-    Route::put('/project_memberships/approve', [ProjectMembershipController::class, 'approveRequest']);    
+    Route::put('/project_memberships/approve', [ProjectMembershipController::class, 'approveRequest']);
 
     // Reject the join request send by user (can only be done by the lead professor)
-    Route::put('/project_memberships/reject', [ProjectMembershipController::class, 'rejectRequest']);  
+    Route::put('/project_memberships/reject', [ProjectMembershipController::class, 'rejectRequest']);
    
     //Update Project Membership by finding one using the foriegn keys in request body
     Route::put('/project_memberships', [ProjectMembershipController::class, 'updateByPivot']);
 
+    // Get all the join requests of recieved by authenticated professor from all the projects
+    Route::get('/project_memberships/pending_requests', [ProjectMembershipController::class, 'getPendingRequests']);
     // Remove the project membership between a project and user by forign keys
     Route::delete('/project_memberships', [ProjectMembershipController::class, 'removeUserFromProject']);
 });

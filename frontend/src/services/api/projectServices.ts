@@ -93,4 +93,15 @@ export const deleteProjectWithID = async (id) =>{
     }
 }
 
-
+  
+  // Fetch all project join requests
+export const getProjectJoinRequests = async () => {
+    try {
+      const response = await api.get("api/v1/project_memberships");
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  };
+  

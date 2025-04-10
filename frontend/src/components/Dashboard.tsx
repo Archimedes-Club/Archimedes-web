@@ -470,6 +470,8 @@ import {
 } from "../services/api/projectServices";
 import { getUser } from "../services/api/authServices";
 import { NotificationComponent } from "./NotificationService";
+import { joinProjectRequest } from "../services/api/projectMembershipServices";
+import { AxiosResponse } from "axios";
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<ProjectExtended[]>([]);
@@ -632,20 +634,25 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleJoinRequest = async (projectId: number, skills: string) => {
+  const handleJoinRequest = async (projectId: number) => {
     try {
+
       const project = projects.find((p) => p.id === projectId);
+      const response: AxiosResponse | any = await joinProjectRequest([projectId]);
+      console.log(response);
       alert(
-        `Join request sent to ${
-          project?.team_lead || "project lead"
-        } with skills: ${skills}`
+        // `Join request sent to ${
+        //   project?.team_lead || "project lead"
+        // }`
+        response.data.message
       );
+
 
       // Add project ID to requested list
       setRequestedProjectIds((prev) => [...prev, projectId]);
     } catch (error) {
       console.error("Error sending join request:", error);
-      alert("Failed to send join request. Please try again.");
+      alert("Failed to send join request." + error);
     }
   };
 

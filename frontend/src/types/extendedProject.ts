@@ -8,6 +8,6 @@ export interface ProjectExtended {
     team_size: number;
   
     user_id?: number; // the logged-in user ID
-    membership_status?: 'active' | 'pending'; // status of the user's join request
+    membership?: 'active' | 'pending'; // status of the user's join request
   }
   

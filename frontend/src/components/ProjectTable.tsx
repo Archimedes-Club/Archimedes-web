@@ -192,12 +192,10 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
         <tbody>
           {projects.map((project) => {
             const isMember =
-              project.user_id === loggedInUserId &&
-              project.membership_status === "active";
+              project.membership === "active";
 
             const hasRequested =
-              project.user_id === loggedInUserId &&
-              project.membership_status === "pending";
+              project.membership === "pending";
 
             const isRequestedViaProp = requestedProjectIds.includes(project.id);
 

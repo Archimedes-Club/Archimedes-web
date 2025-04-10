@@ -14,7 +14,19 @@ const api = axios.create({
 
 export const joinProjectRequest = async (project_id) => {
     try {
-        const response = await api.post('api/v1/project_memberships/request', project_id);
+        const data = {
+            project_id: project_id
+        }
+        const response = await api.post('api/v1/project_memberships/request', data);
+        return response;
+    } catch (error) {
+        handleApiError(error);
+    }
+}
+
+export const getPendingRequests = async() => {
+    try {
+        const response = api.get('api/v1/project_memberships/pending_requests');
         return response;
     } catch (error) {
         handleApiError(error);

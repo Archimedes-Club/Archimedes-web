@@ -9,11 +9,3 @@ export interface Notification {
     status: string;
     user_email: string;
   }
-  
-  // Extended type used in UI logic
-  export interface NotificationExtended extends Notification {
-    read: boolean;
-    timestamp?: Date;
-    formattedDate?: string;
-  }
-  

@@ -324,18 +324,14 @@ class ProjectMembershipController extends Controller
         $user = $request->user();
 
         $project_leading = $user->projects()->wherePivot('role','lead')->get();
-
         $returnData = [];
         
         foreach ($project_leading as $project) {
-            $pending_memberships = new ProjectMembershipCollection(ProjectMembership::where('project_id', $project->id)
-                                                    ->where('status', 'pending')
-                                                    ->get()
-                                                    ->keyBy('user_id')); // Optional: to get the structure you showed
+            $pending_memberships = new ProjectMembershipCollection(ProjectMembership::all()->where('project_id', $project->id)
+                                                    ->where('status', 'pending')); // Optional: to get the structure you showed
     
-            // Merge into returnData
             foreach ($pending_memberships as $membership) {
-                $returnData[$membership->user_id] = $membership;
+                $returnData[] = $membership;
             }
         }
 

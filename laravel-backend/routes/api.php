@@ -53,6 +53,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
 
     // Get all the join requests of recieved by authenticated professor from all the projects
     Route::get('/project_memberships/pending_requests', [ProjectMembershipController::class, 'getPendingRequests']);
+    
     // Remove the project membership between a project and user by forign keys
     Route::delete('/project_memberships', [ProjectMembershipController::class, 'removeUserFromProject']);
 });

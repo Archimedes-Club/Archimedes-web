@@ -1,5 +1,6 @@
 import axios from "axios";
 import { handleApiError } from "./authServices";
+import { typographyClasses } from "@mui/material";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -27,6 +28,19 @@ export const joinProjectRequest = async (project_id) => {
 export const getPendingRequests = async() => {
     try {
         const response = api.get('api/v1/project_memberships/pending_requests');
+        return response;
+    } catch (error) {
+        handleApiError(error);
+    }
+}
+
+/**
+ * Get all the membership details of a project, sends project Id in body
+ */
+
+export const getProjectMembers = async (project_id) => {
+    try {
+        const response = await api.get('api/v1/project_memberships/members', project_id);
         return response;
     } catch (error) {
         handleApiError(error);

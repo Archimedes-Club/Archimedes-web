@@ -930,7 +930,12 @@ import "../styles/ProjectDetail.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { NotificationComponent } from "./NotificationService";
 import { getUser } from "../services/api/authServices";
-import { getProjectJoinRequests } from "../services/api/projectServices";
+
+import { Project } from "../types/projects";
+import { ProjectMembership } from "../types/project_membership";
+import { getProjectMembers } from "../services/api/projectMembershipServices";
+import { Axios, AxiosError, AxiosPromise, AxiosResponse } from "axios";
+import { getProjectWithID } from "../services/api/projectServices";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -962,21 +967,20 @@ interface ProjectMember {
   avatar?: string;
 }
 
-interface Project {
-  id: string;
-  title: string;
-  company: string;
-  status: string;
-  description: string;
-  lead?: string;
-  members: ProjectMember[];
+
+interface PendingInvite {
+  id: number;
+  name: string;
+  email: string;
+  skills: string;
 }
 
 const ProjectDetail: React.FC = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<Project | any>(null);
+  const [members, setMembers] = useState< ProjectMembership[] | [] >([]);
   const [loading, setIsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState(0);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -984,7 +988,17 @@ const ProjectDetail: React.FC = () => {
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>("student");
   const [userName, setUserName] = useState<string>("");
-  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
+
+
+
+  const [pendingInvites, setPendingInvites] = useState<
+    {
+      id: number;
+      name: string;
+      email: string;
+      skills: string;
+    }[]
+  >([]);
   const [showPendingInvites, setShowPendingInvites] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -1007,10 +1021,14 @@ const ProjectDetail: React.FC = () => {
 
   const handleConfirmRemove = () => {
     if (memberToRemove && project) {
-      const updatedMembers = project.members.filter(
-        (member) => member.id !== memberToRemove
-      );
-      setProject({ ...project, members: updatedMembers });
+
+      // const updatedMembers = project.members.filter(
+      //   (member) => member.id !== memberToRemove
+      // );
+      // setProject({
+      //   ...project,
+      //   members: updatedMembers,
+      // });
     }
     setDialogOpen(false);
     setMemberToRemove(null);
@@ -1030,7 +1048,16 @@ const ProjectDetail: React.FC = () => {
         email: email,
         role: "MEMBER",
       };
-      setProject({ ...project, members: [...project.members, newMember] });
+
+
+      // // Add the new member to the project
+      // setProject({
+      //   ...project,
+      //   members: [...project.members, newMember],
+      // });
+
+      // Remove from pending invites if it exists there
+
       setPendingInvites(
         pendingInvites.filter((invite) => invite.id !== userId)
       );
@@ -1060,57 +1087,86 @@ const ProjectDetail: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchInvites = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const viewInvites = params.get("viewInvites");
-      if (viewInvites === "true" && userRole === "professor" && projectId) {
+
+    // Check if we're coming from "See all invite requests"
+    const params = new URLSearchParams(window.location.search);
+    const viewInvites = params.get("viewInvites");
+
+    if (viewInvites === "true" && userRole === "professor") {
+      setShowPendingInvites(true);
+
+      // Mock data for pending invites - in a real app, fetch from API
+      const mockPendingInvites = [
+        {
+          id: 101,
+          name: "John Doe",
+          email: "john.doe@example.com",
+          skills: "Python, Machine Learning, Data Analysis",
+        },
+        {
+          id: 102,
+          name: "Jane Smith",
+          email: "jane.smith@example.com",
+          skills: "React, TypeScript, UI/UX Design",
+        },
+      ];
+
+      const data = {
+        project_id: projectId
+      }
+
+      const fetchMemberships = async () =>{
         try {
-          const allRequests = await getProjectJoinRequests();
-          const filteredRequests = allRequests.data.filter(
-            (req: any) =>
-              req.project_id.toString() === projectId &&
-              req.status === "pending"
-          );
-          const formatted = filteredRequests.map((req: any) => ({
-            id: req.user_id,
-            name: req.user_name || "Unknown",
-            email: req.email || "unknown@example.com",
-            skills: req.skills || "N/A",
-          }));
-          setPendingInvites(formatted);
-          setShowPendingInvites(true);
-        } catch (err) {
-          console.error("Error fetching join requests:", err);
+          const members_response:AxiosResponse | any = await getProjectMembers(data);
+          console.log('Response for api call', members_response);
+          setMembers(members_response.data);
+          console.log(members);
+        } catch (error:AxiosError | any) {
+          console.error(error);
+          alert(error.message);
         }
       }
-    };
 
-    fetchInvites();
+      fetchMemberships();
+
+
+      setPendingInvites(mockPendingInvites);
+    }
   }, [projectId, userRole]);
 
   useEffect(() => {
-    const fetchProject = () => {
+    const fetchProject = async () => {
       setIsLoading(true);
-      setTimeout(() => {
-        const mockProject: Project = {
-          id: projectId || "1",
-          title: "Website Redesign – Aiko & Associates",
-          company: "BLUEGROUSE FINANCE PTY LTD",
-          status: "IN PROGRESS",
-          description: "Complete redesign with modern UX",
-          lead: "",
-          members: [
-            {
-              id: "1",
-              name: "Aiden Smith",
-              email: "aiden@example.com",
-              role: "FREELANCER",
-            },
-          ],
-        };
-        setProject(mockProject);
+
+
+      try {
+        const project_response:AxiosResponse | any = await getProjectWithID(projectId);
+
+        console.log("response from fetch project", project_response);
+
+        const data = project_response.data.data;
+        const temp:Project = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          team_size: data.team_size,
+          category: data.category,
+          team_lead: data.team_lead
+        }
+        
+        console.log(temp);
+        setProject(temp);
+
+        console.log(project);
+
+      } catch (error:any) {
+        console.error(error.message);
+        alert(error.message);
+      } finally{
+
         setIsLoading(false);
-      }, 500);
+      }
     };
 
     fetchProject();
@@ -1165,12 +1221,29 @@ const ProjectDetail: React.FC = () => {
           <div className="project-header">
             <div className="project-image" />
             <div className="project-header-info">
-              <Typography variant="h5">{project.title}</Typography>
-              <Typography variant="subtitle1">{project.company}</Typography>
-              <Chip label={project.status} />
-              <Typography>{project.description}</Typography>
+
+              <Typography variant="h5" className="project-title">
+                {project.title}
+              </Typography>
+              {/* <Typography variant="subtitle1" className="project-company">
+                {project.company}
+              </Typography> */}
+              <Chip label={project.status} className="status-chip" />
+              <Typography variant="body1" className="project-description">
+                {project.description}
+              </Typography>
             </div>
           </div>
+
+          <div className="project-info-section">
+            <Typography variant="h6" className="info-title">
+              PROJECT LEAD
+            </Typography>
+            <Typography variant="body1" className="info-value">
+              {project.team_lead || "-"}
+            </Typography>
+          </div>
+
 
           <div className="project-tabs-section">
             <Tabs value={tabValue} onChange={handleTabChange}>
@@ -1230,17 +1303,45 @@ const ProjectDetail: React.FC = () => {
               <Typography variant="h6" sx={{ mt: 4 }}>
                 Current Members
               </Typography>
-              {project.members.map((member) => (
-                <div key={member.id} className="member-card">
-                  <div className="member-avatar-placeholder">
-                    <Typography variant="h6">
-                      {member.name.charAt(0)}
-                    </Typography>
-                  </div>
-                  <div className="member-info">
-                    <Typography variant="h6">{member.name}</Typography>
-                    <Typography>{member.email}</Typography>
-                    <span className="member-role-chip">{member.role}</span>
+
+              <div className="members-list">
+                {members.map((member) => (
+                  <div key={member.id} className="member-card">
+                    <div className="member-avatar-container">
+                      {member.avatar ? (
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="member-avatar"
+                        />
+                      ) : (
+                        <div className="member-avatar-placeholder">
+                          <Typography variant="h6">
+                            {member.name.charAt(0)}
+                          </Typography>
+                        </div>
+                      )}
+                    </div>
+                    <div className="member-info">
+                      <Typography variant="h6" className="member-name">
+                        {member.name}
+                      </Typography>
+                      <Typography variant="body2" className="member-email">
+                        {member.email}
+                      </Typography>
+                      <span className="member-role-chip">{member.role}</span>
+                    </div>
+                    {userRole === "professor" && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        className="remove-member-btn"
+                        onClick={() => handleRemoveClick(member.id)}
+                      >
+                        Remove Member
+                      </Button>
+                    )}
                   </div>
                   {userRole === "professor" && (
                     <Button

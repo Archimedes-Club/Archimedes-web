@@ -55,9 +55,10 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Project $project)
+    public function show($id)
     {
-        //
+        $project = Project::findOrFail($id);
+
         return new ProjectResource($project);
     }
 

@@ -26,7 +26,11 @@ import {
   ProjectMembersSection,
 } from "./NotificationService";
 import { getUser } from "../services/api/authServices";
-
+import { Project } from "../types/projects";
+import { ProjectMembership } from "../types/project_membership";
+import { getProjectMembers } from "../services/api/projectMembershipServices";
+import { Axios, AxiosError, AxiosPromise, AxiosResponse } from "axios";
+import { getProjectWithID } from "../services/api/projectServices";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -65,21 +69,13 @@ interface PendingInvite {
   skills: string;
 }
 
-interface Project {
-  id: string;
-  title: string;
-  company: string;
-  status: string;
-  description: string;
-  lead?: string;
-  members: ProjectMember[];
-}
 
 const ProjectDetail: React.FC = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<Project | any>(null);
+  const [members, setMembers] = useState< ProjectMembership[] | [] >([]);
   const [loading, setIsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState(0);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -87,6 +83,7 @@ const ProjectDetail: React.FC = () => {
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>("student");
   const [userName, setUserName] = useState<string>("");
+
 
   const [pendingInvites, setPendingInvites] = useState<
     {
@@ -118,13 +115,13 @@ const ProjectDetail: React.FC = () => {
 
   const handleConfirmRemove = () => {
     if (memberToRemove && project) {
-      const updatedMembers = project.members.filter(
-        (member) => member.id !== memberToRemove
-      );
-      setProject({
-        ...project,
-        members: updatedMembers,
-      });
+      // const updatedMembers = project.members.filter(
+      //   (member) => member.id !== memberToRemove
+      // );
+      // setProject({
+      //   ...project,
+      //   members: updatedMembers,
+      // });
     }
     setDialogOpen(false);
     setMemberToRemove(null);
@@ -147,11 +144,11 @@ const ProjectDetail: React.FC = () => {
         role: "MEMBER",
       };
 
-      // Add the new member to the project
-      setProject({
-        ...project,
-        members: [...project.members, newMember],
-      });
+      // // Add the new member to the project
+      // setProject({
+      //   ...project,
+      //   members: [...project.members, newMember],
+      // });
 
       // Remove from pending invites if it exists there
       setPendingInvites(
@@ -211,35 +208,60 @@ const ProjectDetail: React.FC = () => {
         },
       ];
 
+      const data = {
+        project_id: projectId
+      }
+
+      const fetchMemberships = async () =>{
+        try {
+          const members_response:AxiosResponse | any = await getProjectMembers(data);
+          console.log('Response for api call', members_response);
+          setMembers(members_response.data);
+          console.log(members);
+        } catch (error:AxiosError | any) {
+          console.error(error);
+          alert(error.message);
+        }
+      }
+
+      fetchMemberships();
+
+
       setPendingInvites(mockPendingInvites);
     }
   }, [projectId, userRole]);
 
   useEffect(() => {
-    const fetchProject = () => {
+    const fetchProject = async () => {
       setIsLoading(true);
-      setTimeout(() => {
-        const mockProject: Project = {
-          id: projectId || "1",
-          title: "Website Redesign – Aiko & Associates",
-          company: "BLUEGROUSE FINANCE PTY LTD",
-          status: "IN PROGRESS",
-          description:
-            "The project involves a complete redesign of the company website. The new design will focus on user experience, incorporating a modern, responsive layout and improved navigation. The aim is to enhance visitor experience and increase conversion rates.",
-          lead: "",
-          members: [
-            {
-              id: "1",
-              name: "Aiden Smith",
-              email: "aiden@example.com",
-              role: "FREELANCER",
-            },
-          ],
-        };
 
-        setProject(mockProject);
+      try {
+        const project_response:AxiosResponse | any = await getProjectWithID(projectId);
+
+        console.log("response from fetch project", project_response);
+
+        const data = project_response.data.data;
+        const temp:Project = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          team_size: data.team_size,
+          category: data.category,
+          team_lead: data.team_lead
+        }
+        
+        console.log(temp);
+        setProject(temp);
+
+        console.log(project);
+
+      } catch (error:any) {
+        console.error(error.message);
+        alert(error.message);
+      } finally{
         setIsLoading(false);
-      }, 500);
+      }
     };
 
     fetchProject();
@@ -330,9 +352,9 @@ const ProjectDetail: React.FC = () => {
               <Typography variant="h5" className="project-title">
                 {project.title}
               </Typography>
-              <Typography variant="subtitle1" className="project-company">
+              {/* <Typography variant="subtitle1" className="project-company">
                 {project.company}
-              </Typography>
+              </Typography> */}
               <Chip label={project.status} className="status-chip" />
               <Typography variant="body1" className="project-description">
                 {project.description}
@@ -345,7 +367,7 @@ const ProjectDetail: React.FC = () => {
               PROJECT LEAD
             </Typography>
             <Typography variant="body1" className="info-value">
-              {project.lead || "-"}
+              {project.team_lead || "-"}
             </Typography>
           </div>
 
@@ -449,7 +471,7 @@ const ProjectDetail: React.FC = () => {
                 Current Members
               </Typography>
               <div className="members-list">
-                {project.members.map((member) => (
+                {members.map((member) => (
                   <div key={member.id} className="member-card">
                     <div className="member-avatar-container">
                       {member.avatar ? (

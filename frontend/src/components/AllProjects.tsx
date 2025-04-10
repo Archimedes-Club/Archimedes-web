@@ -9,6 +9,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import "../styles/DashboardMain.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  getProjects,
+  getProjectWithID,
+  createProject,
+  putProject,
+  patchProject,
+  deleteProjectWithID,
+} from "../services/api/projectServices";
 
 const AllProjects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -16,8 +24,7 @@ const AllProjects: React.FC = () => {
   const [isCreatePageOpen, setIsCreatePageOpen] = useState(false);
   const [isEditPageOpen, setIsEditPageOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [newProject, setNewProject] = useState<Project>({
-    id: 0,
+  const [newProject, setNewProject] = useState({
     title: "",
     description: "",
     status: "",
@@ -51,15 +58,9 @@ const AllProjects: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiToken}`,
-          },
-        });
-        const data = await response.json();
+        const response = await getProjects();
+        console.log("response using axios", response);
+        const data = response?.data;
         if (Array.isArray(data.data)) {
           setProjects(data.data);
         } else {
@@ -92,25 +93,16 @@ const AllProjects: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          authorization: `Bearer ${apiToken}`,
-        },
-        body: JSON.stringify(newProject),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
+      const response = await createProject(JSON.stringify(newProject));
+      if (response?.status != 201) {
+        const errorData = await response?.data;
         console.error("Server Error:", errorData);
         alert(`Server Error: ` + errorData.message);
         return;
       }
-      const createdProject = await response.json();
+      const createdProject = await response;
       setProjects([...projects, createdProject.data]);
       setNewProject({
-        id: 0,
         title: "",
         description: "",
         category: "Web",
@@ -128,22 +120,12 @@ const AllProjects: React.FC = () => {
 
   const deleteProject = async (id: number) => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/projects/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        const error = await response.json();
+      const response = await deleteProjectWithID(id);
+      if (response?.status != 200) {
+        const error = await response?.data.message;
         console.error("Server Error:", error);
       } else {
-        const message = await response.json();
+        const message = await response?.data;
         alert(message.message);
       }
       setProjects(projects.filter((proj) => proj.id !== id));
@@ -173,26 +155,18 @@ const AllProjects: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            authorization: `Bearer ${apiToken}`,
-          },
-          body: JSON.stringify(editingProject),
-        }
+      const response = await putProject(
+        editingProject.id,
+        JSON.stringify(editingProject)
       );
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Server Error:", errorData);
-        alert(`Server Error: ` + errorData.message);
-        return;
-      }
-      const jsonResponse = await response.json();
-      const updatedProject = jsonResponse.data;
+      // if (!response) {
+      //   const errorData = await response.json();
+      //   console.error("Server Error:", errorData);
+      //   alert(`Server Error: ` + errorData.message);
+      //   return;
+      // }
+      const jsonResponse = await response;
+      const updatedProject = jsonResponse?.data;
       setProjects(
         projects.map((proj) =>
           proj.id === updatedProject.id ? updatedProject : proj
@@ -260,12 +234,12 @@ const AllProjects: React.FC = () => {
             <button className="submit-btn">Submit a Project Idea</button>
           </div>
 
-          <ProjectTable
+          {/* <ProjectTable
             projects={projects}
-            onEdit={editProject}
-            onDelete={deleteProject}
-            onRowClick={handleRowClick}
-          />
+            // onEdit={editProject}
+            // onDelete={deleteProject}
+            // onRowClick={handleRowClick}
+          /> */}
 
           <div className="view-more-container">
             <button
@@ -338,8 +312,7 @@ const AllProjects: React.FC = () => {
               />
 
               <label htmlFor="team_size">Team Size</label>
-              <input
-                type="number"
+              <select
                 id="team_size"
                 value={
                   isEditPageOpen && editingProject
@@ -359,7 +332,14 @@ const AllProjects: React.FC = () => {
                 }
                 className="input-field"
                 disabled={isSubmitting}
-              />
+              >
+                <option value="">Select team size</option>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
 
               <label htmlFor="status">Status</label>
               <select

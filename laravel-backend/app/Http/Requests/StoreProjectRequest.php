@@ -29,7 +29,6 @@ class StoreProjectRequest extends FormRequest
             'status' => ['required', Rule::in(['Ongoing', 'Deployed', 'Hiring'])],
             'category' => ['required', Rule::in(['AI/ML', 'Web', 'Research', 'IoT'])],
             'team_size' => ['required', 'integer', 'min:1', 'max:25'],
-            'team_lead' => ['required', 'string']
         ];
     }
 }

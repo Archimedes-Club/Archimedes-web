@@ -21,6 +21,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Sidebar from "./Sidebar";
 import "../styles/ProjectDetail.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  NotificationComponent,
+  ProjectMembersSection,
+} from "./NotificationService";
+import { getUser } from "../services/api/authServices";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,6 +58,13 @@ interface ProjectMember {
   avatar?: string;
 }
 
+interface PendingInvite {
+  id: number;
+  name: string;
+  email: string;
+  skills: string;
+}
+
 interface Project {
   id: string;
   title: string;
@@ -68,11 +80,23 @@ const ProjectDetail: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setIsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState(0);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>("student");
+  const [userName, setUserName] = useState<string>("");
+
+  const [pendingInvites, setPendingInvites] = useState<
+    {
+      id: number;
+      name: string;
+      email: string;
+      skills: string;
+    }[]
+  >([]);
+  const [showPendingInvites, setShowPendingInvites] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -106,9 +130,94 @@ const ProjectDetail: React.FC = () => {
     setMemberToRemove(null);
   };
 
+  // Handle accepting a join request
+  const handleAcceptInvite = (
+    userId: number,
+    projectId: number,
+    skills: string,
+    name: string,
+    email: string
+  ) => {
+    if (project) {
+      // Create new member from invite data
+      const newMember: ProjectMember = {
+        id: userId.toString(),
+        name: name,
+        email: email,
+        role: "MEMBER",
+      };
+
+      // Add the new member to the project
+      setProject({
+        ...project,
+        members: [...project.members, newMember],
+      });
+
+      // Remove from pending invites if it exists there
+      setPendingInvites(
+        pendingInvites.filter((invite) => invite.id !== userId)
+      );
+    }
+  };
+
+  // Handle rejecting an invite
+  const handleRejectInvite = (inviteId: number) => {
+    // In a real app, call API to reject the invite
+    console.log(`Rejected invite with ID ${inviteId}`);
+
+    // Remove from pending invites list
+    setPendingInvites(
+      pendingInvites.filter((invite) => invite.id !== inviteId)
+    );
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await getUser();
+        if (userData && userData.data) {
+          setUserRole(userData.data.role || "student");
+          setUserName(userData.data.name || "User");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    // Check if we're coming from "See all invite requests"
+    const params = new URLSearchParams(window.location.search);
+    const viewInvites = params.get("viewInvites");
+
+    if (viewInvites === "true" && userRole === "professor") {
+      setShowPendingInvites(true);
+
+      // Mock data for pending invites - in a real app, fetch from API
+      const mockPendingInvites = [
+        {
+          id: 101,
+          name: "John Doe",
+          email: "john.doe@example.com",
+          skills: "Python, Machine Learning, Data Analysis",
+        },
+        {
+          id: 102,
+          name: "Jane Smith",
+          email: "jane.smith@example.com",
+          skills: "React, TypeScript, UI/UX Design",
+        },
+      ];
+
+      setPendingInvites(mockPendingInvites);
+    }
+  }, [projectId, userRole]);
+
   useEffect(() => {
     const fetchProject = () => {
-      setLoading(true);
+      setIsLoading(true);
       setTimeout(() => {
         const mockProject: Project = {
           id: projectId || "1",
@@ -124,13 +233,12 @@ const ProjectDetail: React.FC = () => {
               name: "Aiden Smith",
               email: "aiden@example.com",
               role: "FREELANCER",
-              avatar: "",
             },
           ],
         };
 
         setProject(mockProject);
-        setLoading(false);
+        setIsLoading(false);
       }, 500);
     };
 
@@ -184,13 +292,30 @@ const ProjectDetail: React.FC = () => {
           isSidebarVisible ? "sidebar-visible" : ""
         }`}
       >
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={handleBack}
-          className="back-button"
+        <div
+          className="project-header-actions"
+          style={{
+            position: "relative",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
         >
-          BACK TO PROJECTS
-        </Button>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            className="back-button"
+          >
+            BACK TO PROJECTS
+          </Button>
+
+          {/* Add notification component */}
+          <NotificationComponent
+            userRole={userRole}
+            onAcceptInvite={
+              userRole === "professor" ? handleAcceptInvite : undefined
+            }
+          />
+        </div>
 
         <div className="project-details">
           <Typography variant="h4" className="section-title">
@@ -220,7 +345,7 @@ const ProjectDetail: React.FC = () => {
               PROJECT LEAD
             </Typography>
             <Typography variant="body1" className="info-value">
-              -
+              {project.lead || "-"}
             </Typography>
           </div>
 
@@ -240,6 +365,89 @@ const ProjectDetail: React.FC = () => {
             </Tabs>
 
             <TabPanel value={tabValue} index={0}>
+              {userRole === "professor" &&
+                showPendingInvites &&
+                pendingInvites.length > 0 && (
+                  <div className="pending-invites-section">
+                    <Typography
+                      variant="h6"
+                      className="section-subtitle"
+                      sx={{ mb: 2 }}
+                    >
+                      Pending Join Requests
+                    </Typography>
+                    <div className="members-list">
+                      {pendingInvites.map((invite) => (
+                        <div
+                          key={invite.id}
+                          className="member-card pending-invite-card"
+                        >
+                          <div className="member-avatar-container">
+                            <div className="member-avatar-placeholder">
+                              <Typography variant="h6">
+                                {invite.name.charAt(0)}
+                              </Typography>
+                            </div>
+                          </div>
+                          <div className="member-info">
+                            <Typography variant="h6" className="member-name">
+                              {invite.name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              className="member-email"
+                            >
+                              {invite.email}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              className="member-skills"
+                            >
+                              <strong>Skills:</strong> {invite.skills}
+                            </Typography>
+                          </div>
+                          <div className="invite-actions">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              className="accept-invite-btn"
+                              onClick={() =>
+                                handleAcceptInvite(
+                                  invite.id,
+                                  Number(projectId),
+                                  invite.skills,
+                                  invite.name,
+                                  invite.email
+                                )
+                              }
+                              sx={{ mr: 1 }}
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              className="reject-invite-btn"
+                              onClick={() => handleRejectInvite(invite.id)}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              <Typography
+                variant="h6"
+                className="section-subtitle"
+                sx={{ mb: 2, mt: showPendingInvites ? 4 : 0 }}
+              >
+                Current Members
+              </Typography>
               <div className="members-list">
                 {project.members.map((member) => (
                   <div key={member.id} className="member-card">
@@ -267,15 +475,17 @@ const ProjectDetail: React.FC = () => {
                       </Typography>
                       <span className="member-role-chip">{member.role}</span>
                     </div>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      className="remove-member-btn"
-                      onClick={() => handleRemoveClick(member.id)}
-                    >
-                      Remove Member
-                    </Button>
+                    {userRole === "professor" && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        className="remove-member-btn"
+                        onClick={() => handleRemoveClick(member.id)}
+                      >
+                        Remove Member
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>

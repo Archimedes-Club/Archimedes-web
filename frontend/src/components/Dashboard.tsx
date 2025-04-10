@@ -6,9 +6,19 @@ import { Project } from "../types/projects";
 import "../App.css";
 import { IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import "../styles/DashboardMain.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  getProjects,
+  createProject,
+  putProject,
+  // deleteProjectWithID,
+} from "../services/api/projectServices";
+import{
+  joinProjectRequest,
+} from "../services/api/projectMembershipServices";
+import { getUser } from "../services/api/authServices";
+import { NotificationComponent } from "./NotificationService";
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -27,6 +37,8 @@ const Dashboard: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [userRole, setUserRole] = useState<string>("student");
+  const [userName, setUserName] = useState<string>("");
 
   const isMobile = useMediaQuery("(max-width:768px)");
 
@@ -36,32 +48,33 @@ const Dashboard: React.FC = () => {
     navigate(`/projects/${projectId}`);
   };
 
-  const apiToken = localStorage.getItem("authToken");
-
-  // const handleRowClick = (project: Project) => {
-  //   setEditingProject({ ...project });
-  //   setIsEditPageOpen(true);
-  // };
-
   // Toggle sidebar function
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
   };
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiToken}`,
-          },
-        });
-        const data = await response.json();
-        if (Array.isArray(data.data)) {
-          setProjects(data.data);
+        const userData = await getUser();
+        if (userData && userData.data) {
+          setUserRole(userData.data.role || "student");
+          setUserName(userData.data.name || "User");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const fetchProjectsData = async () => {
+      try {
+        const response = await getProjects();
+        if (response && response.data && Array.isArray(response.data)) {
+          setProjects(response.data);
         } else {
           console.error("Invalid data format: Expected an array");
           setProjects([]); // Set an empty array to prevent errors
@@ -74,8 +87,8 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchProjects();
-  }, [apiToken]);
+    fetchProjectsData();
+  }, []);
 
   const addProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,33 +105,20 @@ const Dashboard: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          authorization: `Bearer ${apiToken}`,
-        },
-        body: JSON.stringify(newProject),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Server Error:", errorData);
-        alert(`Server Error: ` + errorData.message);
-        return;
+      const response = await createProject(newProject);
+      if (response && response.data) {
+        setProjects([...projects, response.data.data]);
+        setNewProject({
+          id: 0,
+          title: "",
+          description: "",
+          category: "Web",
+          status: "",
+          team_size: 1,
+          team_lead: userName || "Abhinav",
+        });
+        setIsCreatePageOpen(false);
       }
-      const createdProject = await response.json();
-      setProjects([...projects, createdProject.data]);
-      setNewProject({
-        id: 0,
-        title: "",
-        description: "",
-        category: "Web",
-        status: "",
-        team_size: 1,
-        team_lead: "Abhinav",
-      });
-      setIsCreatePageOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
     } finally {
@@ -126,36 +126,22 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const deleteProject = async (id: number) => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/projects/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiToken}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("Server Error:", error);
-      } else {
-        const message = await response.json();
-        alert(message.message);
-      }
-      setProjects(projects.filter((proj) => proj.id !== id));
-    } catch (error) {
-      console.error("Error deleting project:", error);
-    }
-  };
+  // const deleteProject = async (id: number) => {
+  //   try {
+  //     const response = await deleteProjectWithID(id);
+  //     if (response) {
+  //       alert(response.data.message);
+  //       setProjects(projects.filter((proj) => proj.id !== id));
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting project:", error);
+  //   }
+  // };
 
-  const editProject = (project: Project) => {
-    setEditingProject({ ...project });
-    setIsEditPageOpen(true);
-  };
+  // const editProject = (project: Project) => {
+  //   setEditingProject({ ...project });
+  //   setIsEditPageOpen(true);
+  // };
 
   const updateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,38 +159,54 @@ const Dashboard: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/projects/${editingProject.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            authorization: `Bearer ${apiToken}`,
-          },
-          body: JSON.stringify(editingProject),
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Server Error:", errorData);
-        alert(`Server Error: ` + errorData.message);
-        return;
+      const response = await putProject(editingProject.id, editingProject);
+      if (response && response.data) {
+        const updatedProject = response.data.data;
+        setProjects(
+          projects.map((proj) =>
+            proj.id === updatedProject.id ? updatedProject : proj
+          )
+        );
+        setEditingProject(null);
+        setIsEditPageOpen(false);
       }
-      const jsonResponse = await response.json();
-      const updatedProject = jsonResponse.data;
-      setProjects(
-        projects.map((proj) =>
-          proj.id === updatedProject.id ? updatedProject : proj
-        )
-      );
-      setEditingProject(null);
-      setIsEditPageOpen(false);
     } catch (error) {
       console.error("Error updating project:", error);
       alert("An unexpected error occurred while updating the project.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleJoinRequest = async (projectId: number, skills: string, projectLead: string) => {
+    try {
+      // You can implement the actual API call here to send the join request
+      console.log(
+        `Join request for project ${projectId} with skills: ${skills}`
+      );
+
+      const data = {
+        project_id: projectId
+      }
+
+      const response = await joinProjectRequest(data);
+      
+      if (response?.status != 200){
+        console.log(response?.data.message);
+      }
+
+      console.log(response);
+
+      // For now, just show an alert
+      alert(
+        `Join request sent to ${
+          projectLead || "project lead"
+        } with skills: ${skills}`
+      );
+    } catch (error) {
+
+      console.error("Error sending join request:", error);
+      alert(error);
     }
   };
 
@@ -244,37 +246,28 @@ const Dashboard: React.FC = () => {
           }`}
         >
           <div className="header">
-            <h2>Welcome Prof. Lopez</h2>
-            <IconButton>
-              <NotificationsIcon className="notification-icon" />
-            </IconButton>
+            <h2>
+              Welcome{" "}
+              {userRole === "professor" ? `Prof. ${userName}` : userName}
+            </h2>
+            <div style={{ position: "relative" }}>
+              <NotificationComponent userRole={userRole} />
+            </div>
           </div>
 
           <div className="buttons">
-            <button
-              className="create-btn"
-              onClick={() => setIsCreatePageOpen(true)}
-            >
-              Create a Project
-            </button>
+            {userRole === "professor" && (
+              <button
+                className="create-btn"
+                onClick={() => setIsCreatePageOpen(true)}
+              >
+                Create a Project
+              </button>
+            )}
             <button className="submit-btn">Submit a Project Idea</button>
           </div>
 
-          <ProjectTable
-            projects={projects}
-            onEdit={editProject}
-            onDelete={deleteProject}
-            onRowClick={handleRowClick}
-          />
-
-          {/* <div className="view-more-container">
-            <button
-              className="view-more-btn"
-              onClick={() => navigate("/all-projects")}
-            >
-              View More
-            </button>
-          </div> */}
+          <ProjectTable projects={projects} onJoinRequest={handleJoinRequest} />
         </div>
       ) : (
         <div
@@ -419,7 +412,7 @@ const Dashboard: React.FC = () => {
                 value={
                   isEditPageOpen && editingProject
                     ? editingProject.team_lead
-                    : newProject.team_lead
+                    : newProject.team_lead || userName
                 }
                 onChange={(e) =>
                   isEditPageOpen && editingProject

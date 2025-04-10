@@ -1,14 +1,28 @@
 import { useState, useEffect } from "react";
+import { authCheck, getUser } from "../services/api/authServices";
 
 // Simulate authentication check (Replace with actual authentication logic)
-export const useAuth = () => {
+export const useAuth =  () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking authentication from localStorage or API
-    const userToken = localStorage.getItem("authToken");
-    setIsAuthenticated(!!userToken);
+    const checkAuth = async () => {
+      try {
+        const data = await authCheck(); // Calls the API to check session authentication
+        setIsAuthenticated(true);
+        setIsVerified(data.email_verified);
+      } catch (error) {
+        setIsAuthenticated(false);
+        setIsVerified(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
-  return { isAuthenticated };
+  return { isAuthenticated,isVerified, loading };
 };

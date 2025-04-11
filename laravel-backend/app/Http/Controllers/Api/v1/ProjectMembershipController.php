@@ -310,8 +310,9 @@ class ProjectMembershipController extends Controller
     /**
      * Get all the members of the project
      */
-    public function getProjectMembers(Request $request){
-        $memberships = ProjectMembership::all()->where('project_id', $request->project_id);
+    public function getProjectMembers($id){
+
+        $memberships = ProjectMembership::all()->where('project_id', $id);
         return response()->json(
             new ProjectMembershipCollection($memberships)  
         );

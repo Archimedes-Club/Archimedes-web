@@ -530,6 +530,7 @@ const Dashboard: React.FC = () => {
       try {
         const response = await getProjects();
         if (response && response.data && Array.isArray(response.data)) {
+          console.log("response from fetch projects ",response.data);
           setProjects(response.data);
         } else {
           console.error("Invalid data format: Expected an array");

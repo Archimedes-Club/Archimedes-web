@@ -25,7 +25,7 @@ class ProjectMembershipResource extends JsonResource
             'user_id'=>$this->user_id,
             'member_name' => $member->name,
             'project_id' => $this->project_id,
-            'proejct_title' => $project->title,
+            'project_title' => $project->title,
             'role' => $this->role,
             'status' => $this->status,
             'user_email' => $this->user_email

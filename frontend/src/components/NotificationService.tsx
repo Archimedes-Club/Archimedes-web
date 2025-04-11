@@ -23,7 +23,7 @@ export interface Notification {
   user_id: number;
   member_name: string;
   project_id: number;
-  proejct_title: string;
+  project_title: string;
   role: string;
   status: string;
   user_email: string;
@@ -49,7 +49,7 @@ export const useNotifications = (userRole: string) => {
     const fetchJoinRequest = async () =>{
       try {
         const response:any = await getPendingRequests();
-        console.log("Response from getPendingRequest",response.data);
+        // console.log("Response from getPendingRequest",response.data);
 
         setNotifications(response.data);
       } catch (error: any) {
@@ -75,7 +75,7 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { notifications, handleViewAllInvites } = useNotifications(userRole);
 
-  console.log(notifications);
+  // console.log(notifications);
   const menuOpen = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -88,7 +88,7 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
   const grouped = notifications.reduce((acc, n) => {
     if (!acc[n.project_id]) {
       acc[n.project_id] = {
-        title: n.proejct_title,
+        title: n.project_title,
         projectId: n.project_id,
         requests: [],
       };
@@ -97,7 +97,7 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
     return acc;
   }, {} as Record<number, { title: string; projectId: number; requests: Notification[] }>);
 
-  console.log(grouped);
+  // console.log(grouped);
   return (
     <>
       <IconButton
@@ -129,7 +129,7 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
                   <Box sx={{ width: "100%" }}>
                     {group.requests.map((req) => (
                       <Typography key={req.id} variant="body2">
-                        {req.member_name} wants to join <strong>{group.title}</strong>
+                        {req.member_name} wants to join <strong>{req.project_title}</strong>
                       </Typography>
                     ))}
                     <Button

@@ -5,6 +5,7 @@ export interface ProjectMembership {
     project_id: number;
     project_title: string;
     role: 'lead' | 'member';
-    status: 'active' | 'pending';
+    status: 'active' | 'pending' | 'rejected' | 'accepted';
+
     user_email: string;
   }

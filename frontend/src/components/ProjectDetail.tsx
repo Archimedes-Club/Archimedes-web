@@ -20,7 +20,12 @@ import { NotificationComponent } from "./NotificationService";
 
 import { Project } from "../types/projects";
 import { ProjectMembership } from "../types/project_membership";
-import { approveJoinRequest, getProjectMembers, rejectJoinRequest, removeMemberFromProject } from "../services/api/projectMembershipServices";
+import {
+  approveJoinRequest,
+  getProjectMembers,
+  rejectJoinRequest,
+  removeMemberFromProject,
+} from "../services/api/projectMembershipServices";
 import { getProjectWithID } from "../services/api/projectServices";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -51,7 +56,7 @@ const ProjectDetail: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | any>(null);
-  const [members, setMembers] = useState< ProjectMembership[] >([]);
+  const [members, setMembers] = useState<ProjectMembership[]>([]);
   const [pendingInvites, setPendingInvites] = useState<ProjectMembership[]>([]);
   const [loading, setIsLoading] = useState<boolean>(true);
   const [tabValue, setTabValue] = useState(0);
@@ -66,11 +71,11 @@ const ProjectDetail: React.FC = () => {
     title: "",
     content: "",
     onConfirm: () => {},
-    confirmText: "Confirm"
-  })
+    confirmText: "Confirm",
+  });
   const [memberToRemove, setMemberToRemove] = useState<number | null>(null);
   const [userRole, setUserRole] = useState<string>("professor");
-  
+
   const [showPendingInvites, setShowPendingInvites] = useState(true);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -93,7 +98,7 @@ const ProjectDetail: React.FC = () => {
     onConfirm: () => void,
     confirmText: string = "Confirm"
   ) => {
-    setDialogConfig({ title, content, onConfirm, confirmText});
+    setDialogConfig({ title, content, onConfirm, confirmText });
     setConfirmOpen(true);
   };
 
@@ -101,100 +106,123 @@ const ProjectDetail: React.FC = () => {
    * Method to approve join request, triggers when he approve button is pressed
    * @param membership
    */
-  const handleAcceptInvite = ( membership: ProjectMembership ) => {
-      showConfirmation("Confirm Approve?", "Are you sure you want to approve the join request", ()=>approve(), "Approve");
+  const handleAcceptInvite = (membership: ProjectMembership) => {
+    showConfirmation(
+      "Confirm Approve?",
+      "Are you sure you want to approve the join request",
+      () => approve(),
+      "Approve"
+    );
 
-      const approve = async () => {
-        try {
-          const approveResponse = await approveJoinRequest(membership.project_id, membership.user_id);
-          
-          if(approveResponse?.status == 200){
-            // Remove the membership informtion from pending invites
-            setPendingInvites(
-              pendingInvites.filter((invite) => invite.id !== membership.id)
-            );
-  
-            // Move the membership information to current members
-            membership["status"] = "active";
-            setMembers(data=>[...data, membership]);
-          }
-        } catch (error:any) {
-          alert("Error while approving join request: "+error.message);
+    const approve = async () => {
+      try {
+        const approveResponse = await approveJoinRequest(
+          membership.project_id,
+          membership.user_id
+        );
+
+        if (approveResponse?.status == 200) {
+          // Remove the membership informtion from pending invites
+          setPendingInvites(
+            pendingInvites.filter((invite) => invite.id !== membership.id)
+          );
+
+          // Move the membership information to current members
+          membership["status"] = "active";
+          setMembers((data) => [...data, membership]);
         }
-      }  
+      } catch (error: any) {
+        alert("Error while approving join request: " + error.message);
+      }
+    };
   };
 
   /**
    * Method to reject join request, triggers when he approve button is pressed
-   * @param inviteId 
+   * @param inviteId
    */
 
-  const handleRejectInvite = ( membership: ProjectMembership) => {
-    showConfirmation("Confirm Reject?",  "Are you sure you want to reject the join request?", () => reject(), "Reject");
-    
+  const handleRejectInvite = (membership: ProjectMembership) => {
+    showConfirmation(
+      "Confirm Reject?",
+      "Are you sure you want to reject the join request?",
+      () => reject(),
+      "Reject"
+    );
+
     const reject = async () => {
       try {
-        const rejectResponse = await rejectJoinRequest(membership.project_id, membership.user_id);
+        const rejectResponse = await rejectJoinRequest(
+          membership.project_id,
+          membership.user_id
+        );
 
-        if (rejectResponse?.status == 200){
+        if (rejectResponse?.status == 200) {
           // Removing the join request from the pending invites
           setPendingInvites(
             pendingInvites.filter((request) => request.id !== membership.id)
           );
         }
-        
-      } catch (error : any) {
-        alert("Error while rejecting join request: "+ error.messagea);
+      } catch (error: any) {
+        alert("Error while rejecting join request: " + error.messagea);
       }
-    }
+    };
   };
-
 
   /**
    * Handle remove member from user, triggers upon clicking remove user button
-   * @param member 
+   * @param member
    */
   const handleRemoveClick = (member: ProjectMembership) => {
-    showConfirmation("Remove Member confirmation", "Are you sure you want to remove the user from the project?", ()=> removeMember() , "Confirm Remove");
+    showConfirmation(
+      "Remove Member confirmation",
+      "Are you sure you want to remove the user from the project?",
+      () => removeMember(),
+      "Confirm Remove"
+    );
 
-    const removeMember = async () =>{
+    const removeMember = async () => {
       try {
-        const removeResponse = await removeMemberFromProject(member.project_id, member.user_id);
-        if (removeResponse?.status == 200){
+        const removeResponse = await removeMemberFromProject(
+          member.project_id,
+          member.user_id
+        );
+        if (removeResponse?.status == 200) {
           // remove user from the current members colunn
           setMembers(
             members.filter((existingMember) => existingMember.id !== member.id)
           );
         }
-      } catch (error:any) {
-        alert("Error while trying to remove member from project: "+error.message);
+      } catch (error: any) {
+        alert(
+          "Error while trying to remove member from project: " + error.message
+        );
       }
-    }
+    };
   };
 
-
-/**
- * useEffect to load project details and associated membership data (members + pending invites)
- * when the component mounts or when projectId changes.
- * 
- * - Fetches project information and membership list in parallel.
- * - Categorizes members into 'active' members and 'pending' invites based on status.
- * - Prevents state updates if the component is unmounted before data is received.
- */
+  /**
+   * useEffect to load project details and associated membership data (members + pending invites)
+   * when the component mounts or when projectId changes.
+   *
+   * - Fetches project information and membership list in parallel.
+   * - Categorizes members into 'active' members and 'pending' invites based on status.
+   * - Prevents state updates if the component is unmounted before data is received.
+   */
   useEffect(() => {
     let isMounted = true; // to check if the data is already loaded
 
     const loadData = async () => {
       try {
-        const [projectRes, membersRes]:any = await Promise.all([
+        const [projectRes, membersRes]: any = await Promise.all([
           getProjectWithID(projectId),
-          getProjectMembers(projectId)
+          getProjectMembers(projectId),
         ]);
 
         if (!isMounted) return; // if loaded alreday then return
-  
+
         const projectData = projectRes.data.data;
-  
+
         setProject({
           id: projectData.id,
           title: projectData.title,
@@ -202,19 +230,19 @@ const ProjectDetail: React.FC = () => {
           status: projectData.status,
           team_size: projectData.team_size,
           category: projectData.category,
-          team_lead: projectData.team_lead
+          team_lead: projectData.team_lead,
         });
-  
+
         const memberData = membersRes.data;
-  
-        console.log("memberData:",memberData);
+
+        console.log("memberData:", memberData);
         if (Array.isArray(memberData)) {
-          memberData.forEach(element => {
-            console.log("elemet:",element);
-            if (element.status == "pending"){
-              setPendingInvites(data => [...data, element]);
-            }else{
-              setMembers(data=> [...data, element]);
+          memberData.forEach((element) => {
+            console.log("elemet:", element);
+            if (element.status == "pending") {
+              setPendingInvites((data) => [...data, element]);
+            } else {
+              setMembers((data) => [...data, element]);
             }
           });
         } else {
@@ -228,7 +256,7 @@ const ProjectDetail: React.FC = () => {
         setIsLoading(false);
       }
     };
-  
+
     loadData();
 
     return () => {
@@ -236,12 +264,11 @@ const ProjectDetail: React.FC = () => {
     };
   }, [projectId]);
 
-//  To ensure the members are loaded
+  //  To ensure the members are loaded
   useEffect(() => {
     console.log("pending members array", pendingInvites);
     console.log("✅ Members updated:", members);
   }, [members]);
-
 
   const handleBack = () => navigate("/ongoingprojects");
 
@@ -290,9 +317,8 @@ const ProjectDetail: React.FC = () => {
           <Typography variant="h4">Project details</Typography>
 
           <div className="project-header">
-            <div className="project-image" />
+            {/* <div className="project-image" /> */}
             <div className="project-header-info">
-
               <Typography variant="h5" className="project-title">
                 {project.title}
               </Typography>
@@ -315,7 +341,6 @@ const ProjectDetail: React.FC = () => {
             </Typography>
           </div>
 
-
           <div className="project-tabs-section">
             <Tabs value={tabValue} onChange={handleTabChange}>
               <Tab icon={<GroupIcon />} label="Project Members" />
@@ -335,7 +360,9 @@ const ProjectDetail: React.FC = () => {
                         </Typography>
                       </div>
                       <div className="member-info">
-                        <Typography variant="h6">{invite.member_name}</Typography>
+                        <Typography variant="h6">
+                          {invite.member_name}
+                        </Typography>
                         <Typography>{invite.user_email}</Typography>
                       </div>
                       <div className="invite-actions">
@@ -343,11 +370,7 @@ const ProjectDetail: React.FC = () => {
                           variant="contained"
                           color="primary"
                           size="small"
-                          onClick={() =>
-                            handleAcceptInvite(
-                              invite
-                            )
-                          }
+                          onClick={() => handleAcceptInvite(invite)}
                         >
                           Accept
                         </Button>
@@ -372,11 +395,11 @@ const ProjectDetail: React.FC = () => {
                 {members.map((member) => (
                   <div key={member.id} className="member-card">
                     <div className="member-avatar-container">
-                        <div className="member-avatar-placeholder">
-                          <Typography variant="h6">
-                            {member.member_name.charAt(0)}
-                          </Typography>
-                        </div>
+                      <div className="member-avatar-placeholder">
+                        <Typography variant="h6">
+                          {member.member_name.charAt(0)}
+                        </Typography>
+                      </div>
                     </div>
                     <div className="member-info">
                       <Typography variant="h6" className="member-name">
@@ -388,7 +411,6 @@ const ProjectDetail: React.FC = () => {
                       <span className="member-role-chip">{member.role}</span>
                     </div>
                     {userRole === "professor" && (
-                      
                       <Button
                         variant="outlined"
                         color="error"
@@ -399,32 +421,29 @@ const ProjectDetail: React.FC = () => {
                         Remove Member
                       </Button>
                     )}
-                  </div>)
-                )}
+                  </div>
+                ))}
               </div>
             </TabPanel>
           </div>
         </div>
       </div>
 
-      <ConfirmDialog 
-        open={confimrOpen} 
+      <ConfirmDialog
+        open={confimrOpen}
         title={dialogConfig.title}
         content={dialogConfig.content}
         confirmText={dialogConfig.confirmText}
-        onConfirm={()=> {
+        onConfirm={() => {
           dialogConfig.onConfirm();
           setConfirmOpen(false);
-        }}  
-        onClose={()=> {
+        }}
+        onClose={() => {
           setConfirmOpen(false);
         }}
       />
     </div>
   );
 };
-
-
-
 
 export default ProjectDetail;

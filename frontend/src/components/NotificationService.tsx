@@ -46,17 +46,19 @@ export const useNotifications = (userRole: string) => {
 
   // Fetches the pending requests recieved by the authenticated uesr (professor)
   useEffect(() => {
-    const fetchJoinRequest = async () =>{
+    const fetchJoinRequest = async () => {
       try {
-        const response:any = await getPendingRequests();
+        const response: any = await getPendingRequests();
         // console.log("Response from getPendingRequest",response.data);
 
         setNotifications(response.data);
       } catch (error: any) {
-        console.error("error while making an API call to get pending requests for notifications");
+        console.error(
+          "error while making an API call to get pending requests for notifications"
+        );
         alert(error.message);
       }
-    }
+    };
 
     fetchJoinRequest();
   }, [userRole]);
@@ -71,7 +73,9 @@ export const useNotifications = (userRole: string) => {
   };
 };
 
-export const NotificationComponent: React.FC<NotificationProps> = ({ userRole }) => {
+export const NotificationComponent: React.FC<NotificationProps> = ({
+  userRole,
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { notifications, handleViewAllInvites } = useNotifications(userRole);
 
@@ -104,7 +108,10 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
         onClick={handleClick}
         sx={{ position: "absolute", top: 10, right: 20 }}
       >
-        <Badge color="error">
+        <Badge
+          color="error"
+          badgeContent={notifications.length > 0 ? notifications.length : null}
+        >
           <NotificationsIcon />
         </Badge>
       </IconButton>
@@ -129,7 +136,8 @@ export const NotificationComponent: React.FC<NotificationProps> = ({ userRole })
                   <Box sx={{ width: "100%" }}>
                     {group.requests.map((req) => (
                       <Typography key={req.id} variant="body2">
-                        {req.member_name} wants to join <strong>{req.project_title}</strong>
+                        {req.member_name} wants to join{" "}
+                        <strong>{req.project_title}</strong>
                       </Typography>
                     ))}
                     <Button

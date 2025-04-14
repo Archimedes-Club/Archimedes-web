@@ -23,7 +23,7 @@ export const handleApiError = (error) => {
         case 401:
           throw new Error("Unauthorized. Please login.");
         case 403:
-          throw new Error("Forbidden. You don’t have permission to access this.");
+          throw new Error("Forbidden. You don't have permission to access this.");
         case 404:
           throw new Error("Resource not found.");
         case 422:

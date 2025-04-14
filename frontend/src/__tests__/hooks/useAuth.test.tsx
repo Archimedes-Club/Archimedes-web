@@ -1,36 +1,104 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '../../hooks/useAuth';
+import * as authServices from '../../services/api/authServices';
+
+// Mock the auth services
+jest.mock('../../services/api/authServices', () => ({
+  authCheck: jest.fn(),
+  getUser: jest.fn(),
+}));
 
 // Wrapper component that uses the hook and renders its state
 const HookWrapper: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isVerified, loading } = useAuth();
   return (
     <div>
-      {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+      <div data-testid="auth-status">
+        {loading ? 'Loading' : isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+      </div>
+      <div data-testid="verification-status">
+        {isVerified ? 'Verified' : 'Not Verified'}
+      </div>
     </div>
   );
 };
 
 describe('useAuth hook', () => {
-  // Clear localStorage before each test
+  // Clear mocks before each test
   beforeEach(() => {
-    localStorage.clear();
+    jest.clearAllMocks();
   });
 
-  it('should show "Not Authenticated" when no token is present', () => {
+  it('should show "Not Authenticated" when authentication fails', async () => {
+    // Mock the authCheck function to throw an error
+    (authServices.authCheck as jest.Mock).mockRejectedValue(new Error('Auth failed'));
+    
     render(<HookWrapper />);
-    // Verify the text is rendered as expected
-    expect(screen.getByText(/Not Authenticated/i)).toBeInTheDocument();
-  });
-
-  it('should show "Authenticated" when a token is present', async () => {
-    // Set a token in localStorage
-    localStorage.setItem('authToken', 'dummy-token');
-    render(<HookWrapper />);
-    // Wait for the hook effect to update the state
+    
+    // Initially should show loading
+    expect(screen.getByTestId('auth-status').textContent).toBe('Loading');
+    
+    // Wait for the API call to complete
     await waitFor(() => {
-      expect(screen.getByText(/Authenticated/i)).toBeInTheDocument();
+      expect(screen.getByTestId('auth-status').textContent).toBe('Not Authenticated');
+    });
+    
+    expect(screen.getByTestId('verification-status').textContent).toBe('Not Verified');
+    expect(authServices.authCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show "Authenticated" and "Verified" when authentication succeeds with verified email', async () => {
+    // Mock successful authentication with verified email
+    (authServices.authCheck as jest.Mock).mockResolvedValue({ 
+      authenticated: true, 
+      email_verified: true 
+    });
+    
+    render(<HookWrapper />);
+    
+    // Wait for the API call to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status').textContent).toBe('Authenticated');
+    });
+    
+    expect(screen.getByTestId('verification-status').textContent).toBe('Verified');
+    expect(authServices.authCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('should show "Authenticated" but "Not Verified" when email is not verified', async () => {
+    // Mock successful authentication with unverified email
+    (authServices.authCheck as jest.Mock).mockResolvedValue({ 
+      authenticated: true, 
+      email_verified: false 
+    });
+    
+    render(<HookWrapper />);
+    
+    // Wait for the API call to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status').textContent).toBe('Authenticated');
+    });
+    
+    expect(screen.getByTestId('verification-status').textContent).toBe('Not Verified');
+    expect(authServices.authCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('should set loading to false after auth check completes', async () => {
+    // Mock successful authentication
+    (authServices.authCheck as jest.Mock).mockResolvedValue({ 
+      authenticated: true, 
+      email_verified: true 
+    });
+    
+    render(<HookWrapper />);
+    
+    // Initially should show loading
+    expect(screen.getByTestId('auth-status').textContent).toBe('Loading');
+    
+    // After API call completes, loading should be false
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status').textContent).not.toBe('Loading');
     });
   });
 });

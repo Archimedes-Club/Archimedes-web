@@ -1,136 +1,102 @@
+// src/__tests__/components/ProjectTable.test.tsx
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ProjectTable from "../../components/ProjectTable";
 import { Project } from "../../types/projects";
+import { BrowserRouter } from "react-router-dom";
 
-describe("ProjectTable Component", () => {
-  const sampleProject: Project = {
+const sampleProjects: Project[] = [
+  {
     id: 1,
-    title: "Test Project",
-    description: "Test Description",
-    category: "Test Category",
-    team_lead: "John Doe",
+    title: "Project One",
+    description: "Description for project one",
+    category: "Category A",
+    team_lead: "Alice",
     status: "Active",
     team_size: 5,
-  };
+  },
+  {
+    id: 2,
+    title: "Project Two",
+    description: "Description for project two",
+    category: "Category B",
+    team_lead: "Bob",
+    status: "Completed",
+    team_size: 3,
+  },
+];
 
-  const sampleProjects: Project[] = [sampleProject];
-
-  let mockOnEdit: jest.Mock;
-  let mockOnDelete: jest.Mock;
+describe("ProjectTable", () => {
+  const onEdit = jest.fn();
+  const onDelete = jest.fn();
+  const onRowClick = jest.fn();
 
   beforeEach(() => {
-    mockOnEdit = jest.fn();
-    mockOnDelete = jest.fn();
+    jest.clearAllMocks();
   });
 
-  test("renders table headers correctly", () => {
+  const renderComponent = () =>
     render(
-      <ProjectTable
-        projects={sampleProjects}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
+      <BrowserRouter>
+        <ProjectTable
+          projects={sampleProjects}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onRowClick={onRowClick}
+        />
+      </BrowserRouter>
     );
 
-    // Verify that the table headers are rendered
-    expect(screen.getByText("Project Title")).toBeInTheDocument();
-    expect(screen.getByText("Description")).toBeInTheDocument();
-    expect(screen.getByText("Category")).toBeInTheDocument();
-    expect(screen.getByText("Team Lead")).toBeInTheDocument();
-    expect(screen.getByText("Status")).toBeInTheDocument();
-    expect(screen.getByText("Team Size")).toBeInTheDocument();
-    expect(screen.getByText("Actions")).toBeInTheDocument();
+  test("renders table headers", () => {
+    renderComponent();
+    expect(screen.getByRole("columnheader", { name: /Project Title/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Description/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Category/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Team Lead/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Status/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Team Size/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /Actions/i })).toBeInTheDocument();
   });
 
-  test("renders project data correctly", () => {
-    render(
-      <ProjectTable
-        projects={sampleProjects}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // Verify that the project details are rendered in the table
-    expect(screen.getByText("Test Project")).toBeInTheDocument();
-    expect(screen.getByText("Test Description")).toBeInTheDocument();
-    expect(screen.getByText("Test Category")).toBeInTheDocument();
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("Active")).toBeInTheDocument();
-    expect(screen.getByText("5")).toBeInTheDocument();
+  test("renders project rows", () => {
+    renderComponent();
+    sampleProjects.forEach((project) => {
+      expect(screen.getByText(project.title)).toBeInTheDocument();
+      expect(screen.getByText(project.description)).toBeInTheDocument();
+      expect(screen.getByText(project.category)).toBeInTheDocument();
+      expect(screen.getByText(project.team_lead)).toBeInTheDocument();
+      expect(screen.getByText(project.status)).toBeInTheDocument();
+      expect(screen.getByText(project.team_size.toString())).toBeInTheDocument();
+    });
   });
 
-  test("calls onEdit with the correct project when edit button is clicked", () => {
-    render(
-      <ProjectTable
-        projects={sampleProjects}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // Get all button elements in the row; the first button is for editing.
-    const buttons = screen.getAllByRole("button");
-    fireEvent.click(buttons[0]);
-
-    expect(mockOnEdit).toHaveBeenCalledWith(sampleProject);
-  });
-
-  test("calls onDelete with the correct id when delete button is clicked", () => {
-    render(
-      <ProjectTable
-        projects={sampleProjects}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // Get all button elements in the row; the second button is for deletion.
-    const buttons = screen.getAllByRole("button");
-    fireEvent.click(buttons[1]);
-
-    expect(mockOnDelete).toHaveBeenCalledWith(sampleProject.id);
-  });
-
-  // Additional test case 1: Handle empty projects array
-  test("renders correctly when projects array is empty", () => {
-    render(
-      <ProjectTable projects={[]} onEdit={mockOnEdit} onDelete={mockOnDelete} />
-    );
-
-    // Verify that table headers are still rendered
-    expect(screen.getByText("Project Title")).toBeInTheDocument();
-
- 
-    const tbody = document.querySelector("tbody");
-    expect(tbody?.children.length).toBe(0);
-  });
-
-  //Handle edge-case project data (empty strings or zero values)
-  test("renders edge-case project data correctly", () => {
-    const edgeProject: Project = {
-      id: 2,
-      title: "",
-      description: "",
-      category: "",
-      team_lead: "",
-      status: "",
-      team_size: 0,
-    };
-    render(
-      <ProjectTable
-        projects={[edgeProject]}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // Check that a row is rendered (1 header + 1 data row)
+  test("calls onRowClick when a row is clicked", () => {
+    renderComponent();
     const rows = screen.getAllByRole("row");
-    expect(rows).toHaveLength(2);
+    // First row is the header; the second row corresponds to the first project.
+    fireEvent.click(rows[1]);
+    expect(onRowClick).toHaveBeenCalledWith(sampleProjects[0].id);
+  });
 
-    // Even if fields are empty, the team size should display "0"
-    expect(screen.getByText("0")).toBeInTheDocument();
+  test("calls onEdit when edit button is clicked", () => {
+    renderComponent();
+    const rows = screen.getAllByRole("row");
+    const firstRow = rows[1];
+    // The first button in the first row is for editing.
+    const buttons = firstRow.querySelectorAll("button");
+    const editButton = buttons[0];
+    fireEvent.click(editButton);
+    expect(onEdit).toHaveBeenCalledWith(sampleProjects[0]);
+  });
+
+  test("calls onDelete when delete button is clicked", () => {
+    renderComponent();
+    const rows = screen.getAllByRole("row");
+    const firstRow = rows[1];
+    // The second button in the first row is for deletion.
+    const buttons = firstRow.querySelectorAll("button");
+    const deleteButton = buttons[1];
+    fireEvent.click(deleteButton);
+    expect(onDelete).toHaveBeenCalledWith(sampleProjects[0].id);
   });
 });

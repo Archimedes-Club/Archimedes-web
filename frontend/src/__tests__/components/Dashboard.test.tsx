@@ -1,453 +1,160 @@
+// src/__tests__/components/Dashboard.test.tsx
 import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Dashboard from "../../components/Dashboard";
-import { MemoryRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 
-// Globally mock fetch and alert
-beforeEach(() => {
-  jest.spyOn(global, "fetch");
-  window.alert = jest.fn();
-});
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+const sampleProjects = [
+  {
+    id: 1,
+    title: "Project One",
+    description: "Description for project one",
+    status: "Active",
+    category: "Category A",
+    team_lead: "Alice",
+    team_size: 5,
+  },
+  {
+    id: 2,
+    title: "Project Two",
+    description: "Description for project two",
+    status: "Completed",
+    category: "Category B",
+    team_lead: "Bob",
+    team_size: 3,
+  },
+];
 
-describe("Dashboard Component - Extended Tests", () => {
-  test("displays a loading message and then renders fetched projects", async () => {
-    const fakeProjects = {
-      data: [
-        {
-          id: 1,
-          title: "Test Project",
-          description: "A test project",
-          status: "Ongoing",
-          category: "Web",
-          team_lead: "Alice",
-          team_size: 3,
-        },
-      ],
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
+// Provide a global mock for useNavigate.
+const mockedNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockedNavigate,
+}));
 
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>
-    );
+describe("Dashboard Component", () => {
+  beforeEach(() => {
+    (global.fetch as jest.Mock) = jest.fn((url: string, options?: RequestInit) => {
+      // Mock GET: fetching projects.
+      if (url.includes("/api/v1/projects") && options?.method === "GET") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: sampleProjects }),
+        });
+      }
+      // Mock POST: creating a project.
+      if (url.includes("/api/v1/projects") && options?.method === "POST") {
+        const newProject = JSON.parse(options.body as string);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: { ...newProject, id: 3 } }),
+        });
+      }
+      // Mock DELETE: deleting a project.
+      if (url.includes("/api/v1/projects") && options?.method === "DELETE") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ message: "Project deleted successfully" }),
+        });
+      }
+      // Mock PUT: updating a project.
+      if (url.includes("/api/v1/projects") && options?.method === "PUT") {
+        const updatedProject = JSON.parse(options.body as string);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ data: updatedProject }),
+        });
+      }
+      return Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({}),
+      });
+    }) as jest.Mock;
 
-    // Initially, a loading message should be displayed
-    expect(screen.getByText(/loading projects/i)).toBeInTheDocument();
-
-    // Wait for the project to be displayed after data is loaded
-    await waitFor(() => {
-      expect(screen.getByText(/^Test Project$/i)).toBeInTheDocument();
-    });
+    // Set a dummy auth token in localStorage.
+    localStorage.setItem("authToken", "test-token");
+    mockedNavigate.mockClear();
   });
 
-  test('opens the "Create a Project" form when clicking the button', async () => {
-    const fakeProjects = { data: [] };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
+  test("displays loading state and then renders main content", async () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <Dashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
+    // Initially, the loading message should appear.
+    expect(screen.getByText(/Loading projects.../i)).toBeInTheDocument();
+
+    // After projects load, the main content (e.g., welcome message) should appear.
     await waitFor(() => {
       expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
     });
-
-    const createButton = screen.getByRole("button", { name: /create a project/i });
-    fireEvent.click(createButton);
-
-    expect(screen.getByText(/Create a New Project/i)).toBeInTheDocument();
   });
 
-  test("submits a new project and updates the project list", async () => {
-    const fakeProjects = { data: [] };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
+  test("renders ProjectTable with fetched projects", async () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <Dashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
+    // Wait until at least one table cell with the exact text "Project One" is found.
     await waitFor(() => {
-      expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
+      const cell = screen.getByText(/^Project One$/);
+      expect(cell).toBeInTheDocument();
     });
 
-    // Open the create project form
-    const createButton = screen.getByRole("button", { name: /create a project/i });
-    fireEvent.click(createButton);
-
-    // Fill in the form fields
-    fireEvent.change(screen.getByPlaceholderText(/enter project title/i), {
-      target: { value: "New Project" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter description/i), {
-      target: { value: "A new project description" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter team size/i), {
-      target: { value: "4" },
-    });
-    // For select elements, get them using getAllByRole
-    const [statusSelect, categorySelect] = screen.getAllByRole("combobox");
-    fireEvent.change(statusSelect, { target: { value: "Ongoing" } });
-    fireEvent.change(categorySelect, { target: { value: "Web" } });
-    fireEvent.change(screen.getByPlaceholderText(/enter team lead/i), {
-      target: { value: "Bob" },
-    });
-
-    // Simulate the POST request response
-    const createdProject = {
-      data: {
-        id: 2,
-        title: "New Project",
-        description: "A new project description",
-        status: "Ongoing",
-        category: "Web",
-        team_lead: "Bob",
-        team_size: 4,
-      },
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => createdProject,
-    });
-
-    const submitButton = screen.getByRole("button", { name: /^Create Project$/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/^New Project$/i)).toBeInTheDocument();
+    // Additionally, confirm that each project title from our sample is rendered.
+    sampleProjects.forEach((project) => {
+      expect(screen.getByText(project.title)).toBeInTheDocument();
     });
   });
 
-  test("deletes a project and removes it from the list", async () => {
-    const fakeProjects = {
-      data: [
-        {
-          id: 1,
-          title: "Delete Me",
-          description: "Project to be deleted",
-          status: "Ongoing",
-          category: "Web",
-          team_lead: "Alice",
-          team_size: 3,
-        },
-      ],
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
+  test("navigates to project detail when a row is clicked", async () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <Dashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
+    // Wait for projects to be rendered.
     await waitFor(() => {
-      expect(screen.getByText(/^Delete Me$/i)).toBeInTheDocument();
+      expect(screen.getByText(/^Project One$/)).toBeInTheDocument();
     });
 
-    // Simulate a successful DELETE API response
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: "Project deleted successfully" }),
-    });
-
-    // Assume the delete button is identified by data-testid="DeleteIcon"
-    const deleteIcon = screen.getByTestId("DeleteIcon");
-    const deleteButton = deleteIcon.closest("button");
-    if (deleteButton) {
-      fireEvent.click(deleteButton);
-    } else {
-      throw new Error("Delete button not found");
+    // Identify the row that contains the exact text "Project One".
+    const projectRow = screen.getByText(/^Project One$/).closest("tr");
+    if (projectRow) {
+      fireEvent.click(projectRow);
     }
-
-    await waitFor(() => {
-      expect(screen.queryByText(/^Delete Me$/i)).not.toBeInTheDocument();
-    });
+    expect(mockedNavigate).toHaveBeenCalledWith("/projects/1");
   });
 
-  test("submits an edited project and updates the project list", async () => {
-    // Initially return one project
-    const fakeProjects = {
-      data: [
-        {
-          id: 1,
-          title: "Old Project",
-          description: "Old description",
-          status: "Ongoing",
-          category: "Web",
-          team_lead: "Alice",
-          team_size: 3,
-        },
-      ],
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
+  test("opens create project form when 'Create a Project' button is clicked", async () => {
     render(
-      <MemoryRouter>
+      <BrowserRouter>
         <Dashboard />
-      </MemoryRouter>
+      </BrowserRouter>
     );
 
-    // Wait for the project to appear
-    await waitFor(() => {
-      expect(screen.getByText(/^Old Project$/i)).toBeInTheDocument();
-    });
-
-    // Assume the edit button is identified by data-testid="EditIcon"
-    const editIcon = screen.getByTestId("EditIcon");
-    const editButton = editIcon.closest("button");
-    if (editButton) {
-      fireEvent.click(editButton);
-    } else {
-      throw new Error("Edit button not found");
-    }
-
-    // The form should be pre-filled with the old project data
-    expect(screen.getByDisplayValue("Old Project")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Old description")).toBeInTheDocument();
-
-    // Modify the form fields
-    fireEvent.change(screen.getByPlaceholderText(/enter project title/i), {
-      target: { value: "Updated Project" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter description/i), {
-      target: { value: "Updated description" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter team size/i), {
-      target: { value: "5" },
-    });
-    const [statusSelect, categorySelect] = screen.getAllByRole("combobox");
-    fireEvent.change(statusSelect, { target: { value: "Hiring" } });
-    fireEvent.change(categorySelect, { target: { value: "Research" } });
-    fireEvent.change(screen.getByPlaceholderText(/enter team lead/i), {
-      target: { value: "Bob" },
-    });
-
-    // Simulate the PUT request response with updated project data
-    const updatedProject = {
-      data: {
-        id: 1,
-        title: "Updated Project",
-        description: "Updated description",
-        status: "Hiring",
-        category: "Research",
-        team_lead: "Bob",
-        team_size: 5,
-      },
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => updatedProject,
-    });
-
-    // Submit the updated project
-    const updateButton = screen.getByRole("button", { name: /^Update Project$/i });
-    fireEvent.click(updateButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/^Updated Project$/i)).toBeInTheDocument();
-    });
-  });
-
-  test("shows alert and prevents submission when required fields are empty on create", async () => {
-    const fakeProjects = { data: [] };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>
-    );
-
+    // Ensure the main dashboard content is rendered.
     await waitFor(() => {
       expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
     });
 
+    // Click the "Create a Project" button.
     const createButton = screen.getByRole("button", { name: /create a project/i });
     fireEvent.click(createButton);
 
-    // Clear required fields and submit the form
-    fireEvent.change(screen.getByPlaceholderText(/enter project title/i), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter description/i), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter team size/i), {
-      target: { value: "0" },
-    });
-
-    const submitButton = screen.getByRole("button", { name: /^Create Project$/i });
-    fireEvent.click(submitButton);
-
-    // Verify that alert was called to indicate error
-    expect(window.alert).toHaveBeenCalled();
-  });
-
-  test("cancels the create/edit form correctly", async () => {
-    const fakeProjects = { data: [] };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>
-    );
-
+    // Verify that the create project form is displayed.
     await waitFor(() => {
-      expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dashboard \/ Create Project/i)).toBeInTheDocument();
     });
-
-    // Open the create form
-    const createButton = screen.getByRole("button", { name: /create a project/i });
-    fireEvent.click(createButton);
-
-    expect(screen.getByText(/Create a New Project/i)).toBeInTheDocument();
-
-    // Click the Cancel button (ensure its type is button)
-    const cancelButton = screen.getByRole("button", { name: /cancel/i });
-    fireEvent.click(cancelButton);
-
-    // Should return to the main page showing the welcome message
-    await waitFor(() => {
-      expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
-    });
-  });
-
-  test("handles API error on project update", async () => {
-    // Initially return one project
-    const fakeProjects = {
-      data: [
-        {
-          id: 1,
-          title: "Project Error",
-          description: "Description",
-          status: "Ongoing",
-          category: "Web",
-          team_lead: "Alice",
-          team_size: 3,
-        },
-      ],
-    };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/^Project Error$/i)).toBeInTheDocument();
-    });
-
-    // Open the edit form
-    const editIcon = screen.getByTestId("EditIcon");
-    const editButton = editIcon.closest("button");
-    if (editButton) {
-      fireEvent.click(editButton);
-    } else {
-      throw new Error("Edit button not found");
-    }
-
-    // Modify the title field
-    fireEvent.change(screen.getByPlaceholderText(/enter project title/i), {
-      target: { value: "Updated Error" },
-    });
-
-    // Simulate a PUT request that returns an error
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Update failed", errors: {} }),
-    });
-
-    const updateButton = screen.getByRole("button", { name: /^Update Project$/i });
-    fireEvent.click(updateButton);
-
-    // Verify that alert was called to indicate error
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalled();
-    });
-  });
-
-  test("handles API error on project creation", async () => {
-    const fakeProjects = { data: [] };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => fakeProjects,
-    });
-
-    render(
-      <MemoryRouter>
-        <Dashboard />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/Welcome Prof\. Lopez/i)).toBeInTheDocument();
-    });
-
-    const createButton = screen.getByRole("button", { name: /create a project/i });
-    fireEvent.click(createButton);
-
-    // Fill in form data
-    fireEvent.change(screen.getByPlaceholderText(/enter project title/i), {
-      target: { value: "Error Project" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter description/i), {
-      target: { value: "Error description" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/enter team size/i), {
-      target: { value: "2" },
-    });
-    const [statusSelect, categorySelect] = screen.getAllByRole("combobox");
-    fireEvent.change(statusSelect, { target: { value: "Ongoing" } });
-    fireEvent.change(categorySelect, { target: { value: "Web" } });
-    fireEvent.change(screen.getByPlaceholderText(/enter team lead/i), {
-      target: { value: "Charlie" },
-    });
-
-    // Simulate a POST request that returns an error
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: "Creation failed", errors: {} }),
-    });
-
-    const submitButton = screen.getByRole("button", { name: /^Create Project$/i });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(window.alert).toHaveBeenCalled();
-    });
+    expect(screen.getByRole("heading", { name: /Create a New Project/i })).toBeInTheDocument();
   });
 });

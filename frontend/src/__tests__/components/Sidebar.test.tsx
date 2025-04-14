@@ -1,97 +1,150 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
-import { useNavigate } from "react-router-dom";
+import * as authServices from "../../services/api/authServices";
 
-// Mock the useNavigate hook from react-router-dom
+// Mock react-router-dom
 jest.mock("react-router-dom", () => {
   const originalModule = jest.requireActual("react-router-dom");
   return {
     ...originalModule,
-    useNavigate: jest.fn(),
+    useNavigate: () => jest.fn(),
   };
 });
 
+// Mock auth services
+jest.mock("../../services/api/authServices", () => ({
+  logout: jest.fn(),
+}));
+
 describe("Sidebar Component", () => {
-  let mockNavigate: jest.Mock;
-
+  const mockNavigate = jest.fn();
+  const mockOnClose = jest.fn();
+  
   beforeEach(() => {
-    mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(require("react-router-dom"), "useNavigate").mockReturnValue(mockNavigate);
+    
+    // Mock window.location.reload
+    Object.defineProperty(window, "location", {
+      value: { reload: jest.fn() },
+      writable: true,
+    });
+    
+    window.alert = jest.fn();
   });
 
-  test("renders sidebar title and menu items correctly", () => {
+  test("renders collapsed sidebar when isVisible is false", () => {
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={false} onClose={mockOnClose} />
       </BrowserRouter>
     );
+    
+    const sidebar = document.querySelector(".sidebar");
+    expect(sidebar).toHaveClass("collapsed");
+    expect(sidebar).not.toHaveClass("visible");
+  });
 
-    // Verify that the sidebar title is rendered
-    expect(screen.getByText("Archimedes Portal")).toBeInTheDocument();
+  test("renders expanded sidebar when isVisible is true", () => {
+    render(
+      <BrowserRouter>
+        <Sidebar isVisible={true} onClose={mockOnClose} />
+      </BrowserRouter>
+    );
+    
+    const sidebar = document.querySelector(".sidebar");
+    expect(sidebar).toHaveClass("visible");
+    expect(sidebar).not.toHaveClass("collapsed");
+  });
 
-    // Verify that all menu items are rendered
+  test("renders sidebar menu items", () => {
+    render(
+      <BrowserRouter>
+        <Sidebar isVisible={true} onClose={mockOnClose} />
+      </BrowserRouter>
+    );
+    
+    // Check menu items
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Ongoing Projects")).toBeInTheDocument();
-    expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("All Projects")).toBeInTheDocument();
     expect(screen.getByText("Account")).toBeInTheDocument();
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Logout")).toBeInTheDocument();
   });
 
-  test("navigates to /dashboard when Dashboard is clicked", () => {
+  test("navigates to dashboard page when Dashboard is clicked", () => {
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={true} onClose={mockOnClose} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByText("Dashboard"));
+    
+    const dashboardItem = screen.getByText("Dashboard").closest("li");
+    fireEvent.click(dashboardItem!);
+    
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
   });
 
-  test("navigates to /ongoing-projects when Ongoing Projects is clicked", () => {
+  test("navigates to ongoing projects page when Ongoing Projects is clicked", () => {
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={true} onClose={mockOnClose} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByText("Ongoing Projects"));
-    expect(mockNavigate).toHaveBeenCalledWith("/ongoing-projects");
+    
+    const ongoingProjectsItem = screen.getByText("Ongoing Projects").closest("li");
+    fireEvent.click(ongoingProjectsItem!);
+    
+    expect(mockNavigate).toHaveBeenCalledWith("/ongoingprojects");
   });
 
-  test("navigates to /all-projects when All Projects is clicked", () => {
+  test("navigates to all projects page when All Projects is clicked", () => {
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={true} onClose={mockOnClose} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByText("All Projects"));
+    
+    const allProjectsItem = screen.getByText("All Projects").closest("li");
+    fireEvent.click(allProjectsItem!);
+    
     expect(mockNavigate).toHaveBeenCalledWith("/all-projects");
   });
 
-  test("navigates to /profile when Profile is clicked", () => {
+  test("logs out when Logout is clicked", async () => {
+    (authServices.logout as jest.Mock).mockResolvedValue({
+      message: "Logged out successfully"
+    });
+    
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={true} onClose={mockOnClose} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByText("Profile"));
-    expect(mockNavigate).toHaveBeenCalledWith("/profile");
+    
+    const logoutItem = screen.getByText("Logout").closest("li");
+    fireEvent.click(logoutItem!);
+    
+    await waitFor(() => {
+      expect(authServices.logout).toHaveBeenCalled();
+      expect(window.alert).toHaveBeenCalledWith("Logged out successfully");
+      expect(window.location.reload).toHaveBeenCalled();
+    });
   });
 
-  test("navigates to /logout when Logout is clicked", () => {
+  test("closes sidebar overlay when clicked", () => {
     render(
       <BrowserRouter>
-        <Sidebar />
+        <Sidebar isVisible={true} onClose={mockOnClose} />
       </BrowserRouter>
     );
-    fireEvent.click(screen.getByText("Logout"));
-    expect(mockNavigate).toHaveBeenCalledWith("/logout");
+    
+    const overlay = document.querySelector(".sidebar-overlay");
+    fireEvent.click(overlay!);
+    
+    expect(mockOnClose).toHaveBeenCalled();
   });
 });

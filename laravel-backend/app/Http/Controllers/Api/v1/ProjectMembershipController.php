@@ -16,9 +16,6 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-
-
-
 class ProjectMembershipController extends Controller
 {
     /**
@@ -310,11 +307,19 @@ class ProjectMembershipController extends Controller
     /**
      * Get all the members of the project
      */
-    public function getProjectMembers($id){
+    public function getProjectMembers(Request $request, $id){
 
+        $user_membership= $request->user()->projects()->where("project_id", $id)
+                ->first();
+
+        if (!$user_membership || $user_membership->pivot->status != "active"){
+            return response()->json([
+                "message"=> "Membership details are only available to 'active' members of the project"
+            ], 403);
+        }
         $memberships = ProjectMembership::all()->where('project_id', $id);
         return response()->json(
-            new ProjectMembershipCollection($memberships)  
+                new ProjectMembershipCollection($memberships)
         );
     }
 

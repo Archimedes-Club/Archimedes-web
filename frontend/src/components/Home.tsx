@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 import { motion } from "framer-motion";
+import { useAuth } from "../hooks/useAuth";
+import Dashboard from "./Dashboard";
 
 const ComingSoon: React.FC = () => {
   const navigate = useNavigate();
+  const {isAuthenticated} = useAuth();
 
   return (
     <div className="coming-soon-container">
@@ -30,7 +33,7 @@ const ComingSoon: React.FC = () => {
         whileTap={{ scale: 0.9 }}
         onClick={() => navigate("/login")}
       >
-        Login
+        {isAuthenticated ? ("Dashboard") : ("Login")}
       </motion.button>
     </div>
   );

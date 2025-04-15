@@ -43,10 +43,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <WorkIcon />
             {isVisible && <span>Ongoing Projects</span>}
           </li>
-          <li onClick={() => navigate("/all-projects")}>
+          {/* <li onClick={() => navigate("/all-projects")}>
             <FolderIcon />
             {isVisible && <span>All Projects</span>}
-          </li>
+          </li> */}
           <li>
             <AccountCircleIcon />
             {isVisible && <span>Account</span>}

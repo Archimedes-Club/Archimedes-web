@@ -456,7 +456,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import ProjectTable from "./ProjectTable";
-import { ProjectExtended } from "../types/extendedProject";
+import { ProjectExtended } from "../types/extendedProject.types";
 import "../App.css";
 import { IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";

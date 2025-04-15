@@ -109,3 +109,12 @@ export const removeMemberFromProject = async (project_id, user_id) => {
         handleApiError(error);
     }
 }
+
+export const getUserProjects = async () =>{
+    try {
+        const response = await api.get("api/v1/project_memberships_user");
+        return response;
+    } catch (error) {
+        handleApiError(error);
+    }
+}

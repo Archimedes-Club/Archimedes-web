@@ -8,7 +8,7 @@ import {
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Home from "./components/Home"; // Import Home component 
-import AllProjects from "./components/AllProjects";
+// import AllProjects from "./components/AllProjects";
 import "./SidebarToggle";
 import Registration from "./components/Registration";
 import OngoingProjects from "./components/OngoingProjects";
@@ -41,14 +41,14 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/all-projects"
           element={
             <ProtectedRoute>
               <AllProjects/>
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/ongoingprojects"
           element={

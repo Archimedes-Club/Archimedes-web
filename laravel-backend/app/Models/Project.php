@@ -19,4 +19,14 @@ class Project extends Model
     
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
+
+    /**
+     * one to many realation to users via Project_Membership table
+     */
+    public function users(){
+        return $this->belongsToMany(User::class, 'project_memberships')
+                    ->withTimestamps()
+                    ->withPivot('role', 'status', 'user_email')
+                    ->using(ProjectMembership::class);
+    }
 }

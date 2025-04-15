@@ -8,11 +8,12 @@
 .hamburger-menu {
   position: fixed;
   top: 15px;
-  left: 15px;
+  left: 15px; 
   z-index: 1001;
   background-color: white !important;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
 
 .sidebar-overlay {
   position: fixed;
@@ -24,18 +25,20 @@
   z-index: 999;
 }
 
+
 .project-detail-container {
   flex-grow: 1;
   padding: 24px;
   background-color: #f9f9f9;
   min-height: 100vh;
-  margin-left: 32px;
+  margin-left: 70px; /* change from 32px */
   transition: margin-left 0.3s ease;
 }
 
 .project-detail-container.sidebar-visible {
-  margin-left: 250px; /* Adjust based on your sidebar width */
+  margin-left: 250px;
 }
+
 
 .back-button {
   margin-bottom: 20px;
@@ -52,6 +55,10 @@
   padding: 24px;
 }
 
+.project-details > h4 {
+  margin-bottom: 16px; 
+}
+
 .section-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -65,16 +72,6 @@
   gap: 24px;
 }
 
-.project-image-container {
-  flex-shrink: 0;
-}
-
-.project-image {
-  width: 150px;
-  height: 150px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 8px;
-}
 
 .project-header-info {
   flex-grow: 1;
@@ -102,6 +99,7 @@
   margin-bottom: 16px;
   font-size: 0.75rem;
   height: 24px;
+  margin-top: 8px; 
 }
 
 .project-description {

@@ -11,10 +11,20 @@ use Illuminate\Http\Request;
 // To handle updating non-auth related user information
 class UserController extends Controller
 {
+    /**
+     * Summary of get user
+     * @param \Illuminate\Http\Request $request
+     * @return UserResource
+     */
     public function get(Request $request){
         return new UserResource($request->user());
     }
 
+    /**
+     * Summary of update user 
+     * @param \App\Http\Requests\UpdateUserRequest $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function update(UpdateUserRequest $request){
         $user = $request->user();
         $user->update($request->all());
@@ -25,6 +35,11 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Summary of delete user call
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function delete(Request $request){
         $user = $request->user();
         $user->tokens()->delete();

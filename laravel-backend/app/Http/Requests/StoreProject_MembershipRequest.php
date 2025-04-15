@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreProjectRequest extends FormRequest
+class StoreProject_MembershipRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,11 +24,11 @@ class StoreProjectRequest extends FormRequest
     {
         return [
             //
-            'title' => ['required', 'string'],
-            'description' => ['required', 'string'],
-            'status' => ['required', Rule::in(['Ongoing', 'Deployed', 'Hiring'])],
-            'category' => ['required', Rule::in(['AI/ML', 'Web', 'Research', 'IoT'])],
-            'team_size' => ['required', 'integer', 'min:1', 'max:25'],
+            'user_id' => ['nullable', 'exists:users,id'],
+            'project_id' => ['required', 'exists:projects,id' ],
+            'role' => ['required', Rule::in(['member', 'admin', 'lead'])],
+            'status' => ['required', Rule::in(['active', 'pending'])],
+            'user_email' => ['required', 'email']
         ];
     }
 }

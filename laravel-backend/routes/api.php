@@ -2,12 +2,12 @@
 
 use App\Http\Controllers\Api\v1\AdminController;
 use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\ProjectMembershipController;
 use App\Http\Controllers\Api\v1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\ProjectController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
-
 
 // Routes that are allowed to Authenicated Users
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'verified']], function(){
@@ -15,7 +15,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     // Project Model Routes
     Route::apiResource('projects', ProjectController::class);
 
-    // User Routes
+    // User Data Manipulation Routes
     Route::get('/user', [UserController::class, 'get']);
 
     Route::put('/user',[UserController::class, 'update']);
@@ -23,6 +23,39 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::patch('/user',[UserController::class, 'update']);
 
     Route::delete('/user', [UserController::class,'delete']);
+
+    /**
+     * Project Membership Routes
+    */
+    // Get all the membership details 
+    Route::get('/project_memberships', [ProjectMembershipController::class, 'index']);
+
+    //Get all the projects that the authenticated user is enrolled to
+    Route::get('/project_memberships_user', [ProjectMembershipController::class, 'getUserProjects']);
+
+    // Get all the projects of the users with user_id
+    Route::get('/project_memberships_user/{user_id}', [ProjectMembershipController::class, 'getProjectsByUserId']);
+
+    // Get all the members in the project
+    Route::get('/project_memberships/members/{project_id}',[ProjectMembershipController::class, 'getProjectMembers']);
+
+    // Request to join a project 
+    Route::post('/project_memberships/request', [ProjectMembershipController::class, 'requestToJoinProject']);
+
+    // Approve the join request send by user (can only be done by the lead professor)
+    Route::put('/project_memberships/approve', [ProjectMembershipController::class, 'approveRequest']);
+
+    // Reject the join request send by user (can only be done by the lead professor)
+    Route::put('/project_memberships/reject', [ProjectMembershipController::class, 'rejectRequest']);
+   
+    //Update Project Membership by finding one using the foriegn keys in request body
+    Route::put('/project_memberships', [ProjectMembershipController::class, 'updateByPivot']);
+
+    // Get all the join requests of recieved by authenticated professor from all the projects
+    Route::get('/project_memberships/pending_requests', [ProjectMembershipController::class, 'getPendingRequests']);
+    
+    // Remove the project membership between a project and user by forign keys
+    Route::delete('/project_memberships', [ProjectMembershipController::class, 'removeUserFromProject']);
 });
 
 Route::post('/logout',[AuthController::class, 'logout'])->middleware(['auth:sanctum']);
@@ -32,7 +65,6 @@ Route::post('/register',[AuthController::class, 'register']);
 
 // Login route
 Route::post('/login',[AuthController::class, 'login']);
-
 
 // Route to check if the session data
 Route::get('/debug-session', function (Request $request) {
@@ -78,6 +110,7 @@ Route::post('/email/verification-notification', function (Request $request) {
  * ADMIN Routes
  */
 Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'auth.admin']], function(){
+    
     Route::get('/', function() {
         return "You're an Admin";
     });
@@ -89,5 +122,11 @@ Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v
     Route::patch('/users/{id}', [AdminController::class,'updateUser']);
     
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+
+    // Add user to project
+    Route::post('/project_memberships', [ProjectMembershipController::class, 'addUserToProject']);
+
+    // Update Project Membership by ID 
+    Route::put('/project_memberships/{id}', [ProjectMembershipController::class, 'updateById']);
 
 });

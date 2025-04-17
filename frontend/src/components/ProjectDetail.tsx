@@ -1,4 +1,5 @@
 // ProjectDetail.tsx (FINAL FIX for sidebar spacing like Dashboard)
+/* eslint-disable eqeqeq */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -18,8 +19,8 @@ import "../styles/ProjectDetail.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { NotificationComponent } from "./NotificationService";
 
-import { Project } from "../types/projects";
-import { ProjectMembership } from "../types/project_membership";
+import { Project } from "../types/projects.types";
+import { ProjectMembership } from "../types/project_membership.types";
 import {
   approveJoinRequest,
   getProjectMembers,
@@ -28,6 +29,7 @@ import {
 } from "../services/api/projectMembershipServices";
 import { getProjectWithID } from "../services/api/projectServices";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { useAppContext } from "../context/AppContext";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,10 +75,11 @@ const ProjectDetail: React.FC = () => {
     onConfirm: () => {},
     confirmText: "Confirm",
   });
-  const [memberToRemove, setMemberToRemove] = useState<number | null>(null);
-  const [userRole, setUserRole] = useState<string>("professor");
+  const {user} = useAppContext();
 
-  const [showPendingInvites, setShowPendingInvites] = useState(true);
+  const userId = localStorage.getItem("user_id");
+
+  const [isProjectLead, setIsProjectlead] = useState<Boolean>(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -212,16 +215,19 @@ const ProjectDetail: React.FC = () => {
   useEffect(() => {
     let isMounted = true; // to check if the data is already loaded
 
+    console.log("user from context", user);
     const loadData = async () => {
       try {
-        const [projectRes, membersRes]: any = await Promise.all([
-          getProjectWithID(projectId),
-          getProjectMembers(projectId),
-        ]);
+        // const [projectRes, membersRes]: any = await Promise.all([
+        //   getProjectWithID(projectId),
+        //   getProjectMembers(projectId),
+        // ]);
 
-        if (!isMounted) return; // if loaded alreday then return
+        const projectRes: any = await getProjectWithID(projectId);
 
         const projectData = projectRes.data.data;
+
+        if (!isMounted) return; 
 
         setProject({
           id: projectData.id,
@@ -233,22 +239,42 @@ const ProjectDetail: React.FC = () => {
           team_lead: projectData.team_lead,
         });
 
-        const memberData = membersRes.data;
+        try {
+
+        const memberRes:any = await getProjectMembers(projectId);
+        const memberData = memberRes.data;
 
         console.log("memberData:", memberData);
         if (Array.isArray(memberData)) {
           memberData.forEach((element) => {
             console.log("elemet:", element);
+
+            // eslint-disable-next-line eqeqeq
             if (element.status == "pending") {
               setPendingInvites((data) => [...data, element]);
             } else {
+
+              // eslint-disable-next-line eqeqeq
+              if (element.role == "lead" && element.user_id == userId ){
+                setIsProjectlead(true);
+              }
+              
               setMembers((data) => [...data, element]);
             }
           });
+      
         } else {
           console.error("Expected array but got:", memberData);
           setMembers([]);
         }
+        } catch (err: any) {
+          if (err.response?.status === 403) {
+            console.warn("User not authorized to view members.");
+          } else {
+            throw err;
+          }
+        }
+        
       } catch (error: any) {
         console.error("Error loading project or members:", error.message);
         alert(error.message);
@@ -262,13 +288,13 @@ const ProjectDetail: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [projectId]);
+  }, [projectId, user, userId]);
 
   //  To ensure the members are loaded
   useEffect(() => {
     console.log("pending members array", pendingInvites);
     console.log("✅ Members updated:", members);
-  }, [members]);
+  }, [members, pendingInvites]);
 
   const handleBack = () => navigate("/ongoingprojects");
 
@@ -310,7 +336,7 @@ const ProjectDetail: React.FC = () => {
           >
             BACK TO PROJECTS
           </Button>
-          <NotificationComponent userRole={userRole} />
+          <NotificationComponent userRole={String(localStorage.getItem("userRole"))} />
         </div>
 
         <div className="project-details">
@@ -346,7 +372,7 @@ const ProjectDetail: React.FC = () => {
               <Tab icon={<GroupIcon />} label="Project Members" />
             </Tabs>
             <TabPanel value={tabValue} index={0}>
-              {userRole === "professor" && showPendingInvites && (
+              {isProjectLead && (
                 <div className="pending-invites-section">
                   <Typography variant="h6">Pending Join Requests</Typography>
                   {pendingInvites.map((invite) => (
@@ -410,7 +436,7 @@ const ProjectDetail: React.FC = () => {
                       </Typography>
                       <span className="member-role-chip">{member.role}</span>
                     </div>
-                    {userRole === "professor" && (
+                    {isProjectLead&& (
                       <Button
                         variant="outlined"
                         color="error"

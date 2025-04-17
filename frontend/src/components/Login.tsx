@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/api/authServices";
+import { useAppContext } from "../context/AppContext";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const {user, setUser} = useAppContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,9 +18,20 @@ const Login: React.FC = () => {
     }
     try {
       const responseData = await login(email, password);
-      // console.log(responseData);
+      
       localStorage.setItem("userRole", responseData.user.role); // Store role (professor/student)
       localStorage.setItem("userName", responseData.user.name); // Store user name
+      localStorage.setItem("user_id", responseData.user.id);
+
+      setUser({
+        id: responseData.user.id,
+        name: responseData.user.name,
+        email: responseData.user.email,
+        linkedInURL: responseData.user.linkedInURL || '',
+        phone: responseData.user.phone || '',
+        role: responseData.user.role,
+      });
+
       alert("Logged in as " + responseData.user.name);
       // window.location.reload();
       navigate("/dashboard");
@@ -26,6 +39,7 @@ const Login: React.FC = () => {
       console.error("Error logging in:", error);
       // alert(error);
       setError("Invalid email or password");
+      alert("Invalid Email or Password");
     }
   };
 

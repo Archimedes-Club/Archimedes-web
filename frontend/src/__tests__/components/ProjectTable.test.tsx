@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ProjectTable from "../../components/ProjectTable";
-import { Project } from "../../types/projects";
+import { Project } from "../../types/projects.types";
 
 describe("ProjectTable Component", () => {
   const sampleProject: Project = {

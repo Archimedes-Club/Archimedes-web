@@ -18,15 +18,15 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const navigate = useNavigate();
 
-  const handleLogut = async () =>  {
-    try{ 
+  const handleLogut = async () => {
+    try {
       const response = await logout();
       alert(response.message);
-      window.location.reload(); 
-    }catch(error){
+      window.location.reload();
+    } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   return (
     <>
@@ -43,14 +43,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <WorkIcon />
             {isVisible && <span>Ongoing Projects</span>}
           </li>
-          <li onClick={() => navigate("/all-projects")}>
+          {/* <li onClick={() => navigate("/all-projects")}>
             <FolderIcon />
             {isVisible && <span>All Projects</span>}
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <AccountCircleIcon />
             {isVisible && <span>Account</span>}
-          </li>
+          </li> */}
           <li>
             <PersonIcon />
             {isVisible && <span>Profile</span>}

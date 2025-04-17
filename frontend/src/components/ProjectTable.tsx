@@ -125,7 +125,7 @@
 //making changes
 
 import React, { useState } from "react";
-import { ProjectExtended } from "../types/extendedProject";
+import { ProjectExtended } from "../types/extendedProject.types";
 import "../App.css";
 import {
   Button,

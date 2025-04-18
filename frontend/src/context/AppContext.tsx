@@ -1,3 +1,5 @@
+
+
 // AppContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 import { AppContextType } from '../types/appContext.types';
@@ -43,3 +45,4 @@ export const useAppContext = () => {
   if (!context) throw new Error('useAppContext must be used within AppProvider');
   return context;
 };
+

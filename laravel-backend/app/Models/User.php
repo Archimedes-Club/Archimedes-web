@@ -61,5 +61,14 @@ class User extends Authenticatable implements MustVerifyEmail
                     ->withPivot('role', 'status', 'user_email')
                     ->using(ProjectMembership::class);
     }
+
+    protected static function booted()
+    {
+        static::updating(function ($user) {
+            if ($user->isDirty('role')) {
+                throw new \Exception('The role field cannot be updated once set.');
+            }
+        });
+    }
     
 }

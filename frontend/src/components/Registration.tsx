@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/Registration.css";
 import { login, registerUser } from "../services/api/authServices";
+import { AxiosResponse } from "axios";
 
 const Registration: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,6 @@ const Registration: React.FC = () => {
     password_confirmation: "",
     phone: "",
     linkedin_url: "",
-    role: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
@@ -35,7 +35,6 @@ const Registration: React.FC = () => {
     if (!formData.password.trim()) newErrors.password = "Password is required";
     if (!formData.password_confirmation.trim())
       newErrors.confirmPassword = "Confirm password is required";
-    if (!formData.role) newErrors.role = "Role selection is required";
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,14 +71,16 @@ const Registration: React.FC = () => {
     }
 
     try {
-      const response = await registerUser(JSON.stringify(formData));
+      const response:AxiosResponse | undefined = await registerUser(JSON.stringify(formData));
 
       // const data = await response;
-      localStorage.setItem("userRole", formData.role); // Store role (professor/student)
-      localStorage.setItem("userName", formData.name); // Store user name
+      localStorage.setItem("userRole", response?.data.role); // Store role (professor/student)
+      localStorage.setItem("userName", response?.data.name); // Store user name
       alert("Registration successful!");
 
       await login(formData.email, formData.password);
+
+      // If the registered user is a professor, show a dialogue box stating that we saved his information as professor, and he can perform so and so actions
 
       navigate("/verify-email");
     } catch (error) {
@@ -174,23 +175,6 @@ const Registration: React.FC = () => {
           {errors.linkedin_url && (
             <p className="error-message">{errors.linkedin_url}</p>
           )}
-        </div>
-
-        <div className="form-group">
-          <label>
-            Role <span className="required-asterisk">*</span>
-          </label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select a role</option>
-            <option value="professor">Professor</option>
-            <option value="student">Student</option>
-          </select>
-          {errors.role && <p className="error-message">{errors.role}</p>}
         </div>
 
         <button type="submit">Register</button>

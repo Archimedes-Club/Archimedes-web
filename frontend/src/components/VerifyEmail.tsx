@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { emailVerification, getUser, logout } from "../services/api/authServices";
-import { Refresh } from "@mui/icons-material";
 
 export const VerifyEmail: React.FC = () => {
     const navigate = useNavigate();

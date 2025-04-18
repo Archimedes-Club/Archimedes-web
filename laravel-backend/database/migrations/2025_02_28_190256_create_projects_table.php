@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('description');
-            $table->string('status');
+            $table->text('description');
+            $table->string(column: 'status');
             $table->string('category');
             $table->string('team_lead');
             $table->integer('team_size');

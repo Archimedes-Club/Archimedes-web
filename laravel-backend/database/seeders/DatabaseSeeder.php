@@ -57,7 +57,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            ProjectSeeder::class
+            ProjectSeeder::class,
+            ProfessorEmailSeeder::class
         ]);
     }
 }

@@ -35,7 +35,6 @@ class StoreUserRequest extends FormRequest
             'password' => ['required', 'min:6', 'confirmed'],
             'phone' => ['nullable', 'string', 'regex:/^\d{10}$/'],
             'linkedin_url' => ['nullable', 'url'],
-            'role' => ['required', Rule::in(['professor', 'student'])],
         ];
     }
 }

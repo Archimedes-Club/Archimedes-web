@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\v1\UserResource;
+use App\Models\professor_email;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -14,24 +15,45 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    //
+
+    /**
+     * Checks if the email is in professor_emails table
+     * @param mixed $email
+     * @return bool
+     */
+    private function checkIfProfessor($email){
+        $exits = professor_email::where("email", $email)->exists();
+        return $exits;
+    }
+    
+    /**
+     * Summary of register
+     * @param \App\Http\Requests\StoreUserRequest $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function register(StoreUserRequest $request)  {
+
+        // Checks if the email is in professor_emails
+        $isProfessor = $this->checkIfProfessor($request->email);
+        
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
+            'role' => $isProfessor ? "professor" : "student",
             'linkedin_url' => $request->linkedin_url,
-            'role' => $request->role,
         ]);
 
+        
 
         // $user->sendEmailVerificationNotification();
         event(new Registered($user));
 
         return response()->json([
             'user' => new UserResource($user),
-            'message' => 'User registered successfully'
+            'message' => 'User registered successfully',
+            "isProfessor" => $isProfessor
         ], 201);
     }
 

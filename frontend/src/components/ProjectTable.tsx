@@ -190,56 +190,62 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {projects.map((project) => {
-            const isMember =
-              project.membership === "active";
+          {[...projects]
+            .sort((a, b) => b.id - a.id) // or use `b.created_at - a.created_at` if available
+            .map((project) => {
+              const isMember = project.membership === "active";
 
-            const hasRequested =
-              project.membership === "pending";
+              const hasRequested = project.membership === "pending";
 
-            const isRequestedViaProp = requestedProjectIds.includes(project.id);
+              const isRequestedViaProp = requestedProjectIds.includes(
+                project.id
+              );
 
-            return (
-              <tr key={project.id}>
-                <td>{project.title}</td>
-                <td>{project.description}</td>
-                <td>{project.category}</td>
-                <td>{project.team_lead}</td>
-                <td>{project.status}</td>
-                <td>{project.team_size}</td>
-                <td>
-                  {isMember ? (
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => navigate(`/projects/${project.id}`)}
-                    >
-                      View Project
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      disabled={hasRequested || isRequestedViaProp}
-                      onClick={() => handleConfirmDialogOpen(project.id)}
-                    >
-                      {hasRequested || isRequestedViaProp
-                        ? "Request Sent"
-                        : "Join Project"}
-                    </Button>
-                  )}
-                  {(hasRequested || isRequestedViaProp) && (
-                    <Typography
-                      variant="caption"
-                      sx={{ display: "block", marginTop: "4px", color: "#888" }}
-                    >
-                      Request status: pending
-                    </Typography>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
+              return (
+                <tr key={project.id}>
+                  <td>{project.title}</td>
+                  <td>{project.description}</td>
+                  <td>{project.category}</td>
+                  <td>{project.team_lead}</td>
+                  <td>{project.status}</td>
+                  <td>{project.team_size}</td>
+                  <td>
+                    {isMember ? (
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                      >
+                        View Project
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        disabled={hasRequested || isRequestedViaProp}
+                        onClick={() => handleConfirmDialogOpen(project.id)}
+                      >
+                        {hasRequested || isRequestedViaProp
+                          ? "Request Sent"
+                          : "Join Project"}
+                      </Button>
+                    )}
+                    {(hasRequested || isRequestedViaProp) && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: "block",
+                          marginTop: "4px",
+                          color: "#888",
+                        }}
+                      >
+                        Request status: pending
+                      </Typography>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
 

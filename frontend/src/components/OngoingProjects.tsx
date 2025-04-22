@@ -122,20 +122,11 @@ const OngoingProjects: React.FC = () => {
 
   return (
     <div className="layout-container">
-      <IconButton
-        className="hamburger-menu"
-        onClick={toggleSidebar}
-        size="large"
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-      >
+      <IconButton className="hamburger-menu" onClick={toggleSidebar}>
         <MenuIcon />
       </IconButton>
 
       <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
       />
 
       <div className={`main-content ${isSidebarVisible ? "shifted" : ""}`}>

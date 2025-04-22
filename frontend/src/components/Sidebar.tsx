@@ -1,22 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import CloseIcon from "@mui/icons-material/Close";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import WorkIcon from "@mui/icons-material/Work";
-import FolderIcon from "@mui/icons-material/Folder";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import "../styles/DashboardSidebar.css";
 import { logout } from "../services/api/authServices";
+import { IconButton } from "@mui/material";
+import { MenuIcon } from "lucide-react";
 
 interface SidebarProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
+const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState<Boolean>(false);
 
   const handleLogut = async () => {
     try {
@@ -28,13 +28,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     }
   };
 
+  function toggleSidebar(): void {
+    setIsVisible(!isVisible);
+  }
+
   return (
     <>
       <div className={`sidebar ${isVisible ? "visible" : "collapsed"}`}>
-        {/* <button className="close-btn" onClick={onClose}>
-          <CloseIcon />
-        </button> */}
         <ul>
+          <li onClick={toggleSidebar}>
+            
+          {/* <IconButton className="hamburger-menu" onClick={toggleSidebar}> */}
+            <MenuIcon />
+          </li>
           <li onClick={() => navigate("/dashboard")}>
             <DashboardIcon />
             {isVisible && <span>Dashboard</span>}
@@ -43,14 +49,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <WorkIcon />
             {isVisible && <span>Ongoing Projects</span>}
           </li>
-          {/* <li onClick={() => navigate("/all-projects")}>
-            <FolderIcon />
-            {isVisible && <span>All Projects</span>}
-          </li> */}
-          {/* <li>
-            <AccountCircleIcon />
-            {isVisible && <span>Account</span>}
-          </li> */}
           <li>
             <PersonIcon />
             {isVisible && <span>Profile</span>}
@@ -61,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           </li>
         </ul>
       </div>
-      {isVisible && <div className="sidebar-overlay" onClick={onClose}></div>}
+      {isVisible && <div className="sidebar-overlay" onClick={toggleSidebar}></div>}
     </>
   );
 };

@@ -303,17 +303,15 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="layout-container">
-      <IconButton
+      {/* <IconButton
         className="hamburger-menu"
         onClick={toggleSidebar}
         // style={{ left: isSidebarVisible && !isMobile ? 250 : 70 }}
       >
         <MenuIcon />
-      </IconButton>
+      </IconButton> */}
 
       <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
       />
 
       {isMobile && isSidebarVisible && (

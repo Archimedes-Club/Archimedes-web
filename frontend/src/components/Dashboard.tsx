@@ -616,14 +616,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <IconButton className="hamburger-menu" onClick={toggleSidebar}>
-        <MenuIcon />
-      </IconButton>
+      
 
-      <Sidebar
-        isVisible={isSidebarVisible}
-        onClose={() => setIsSidebarVisible(false)}
-      />
+      <Sidebar />
 
       {isMobile && isSidebarVisible && (
         <div

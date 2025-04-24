@@ -1,4 +1,3 @@
-// OngoingProjects.tsx (UPDATED)
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -28,7 +27,7 @@ import {
   putProject,
   deleteProjectWithID,
 } from "../services/api/projectServices";
-
+import { NotificationComponent } from "./NotificationService";
 import { Project } from "../types/projects.types";
 import "../styles/OngoingProjects.css";
 import { getUser } from "../services/api/authServices";
@@ -39,7 +38,8 @@ const OngoingProjects: React.FC = () => {
   const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userRole, setUserRole] = useState<string>("student"); // default to student
+  const [userRole, setUserRole] = useState<string>("student");
+  const [isEditPageOpen, setIsEditPageOpen] = useState(false);
 
   const handleViewProject = (projectId: number) => {
     navigate(`/projects/${projectId}`);
@@ -75,11 +75,9 @@ const OngoingProjects: React.FC = () => {
       }
     };
 
-    fetchUserInfo(); // ✅ Get user role
-    loadProjects(); // ✅ Get projects
+    fetchUserInfo();
+    loadProjects();
   }, []);
-  //   loadProjects();
-  // }, []);
 
   const updateProject = async (project: Project) => {
     setIsSubmitting(true);
@@ -91,6 +89,7 @@ const OngoingProjects: React.FC = () => {
           prev.map((p) => (p.id === updated.id ? updated : p))
         );
         setEditingProject(null);
+        setIsEditPageOpen(false);
       }
     } catch (error) {
       alert("Error updating project: " + error);
@@ -110,8 +109,6 @@ const OngoingProjects: React.FC = () => {
       if (response?.data?.message) {
         alert(response.data.message);
       }
-
-      // Update state to remove the deleted project from list
       setUserProjects((prev) => prev.filter((p) => p.id !== projectId));
     } catch (error) {
       alert("Error deleting project: " + error);
@@ -138,135 +135,153 @@ const OngoingProjects: React.FC = () => {
         onClose={() => setIsSidebarVisible(false)}
       />
 
-      <div className={`main-content ${isSidebarVisible ? "shifted" : ""}`}>
-        <div className="ongoingprojects">
-          <div className="header">
-            <Typography variant="h5" className="page-header">
-              Ongoing Projects
-            </Typography>
-          </div>
-          <div className="table-container">
-            {displayProjects.length === 0 ? (
-              <Typography variant="h6" className="page-header">
-                You don't have any active projects yet 😀
-              </Typography>
-            ) : (
-              <TableContainer
-                component={Paper}
-                className="projects-table-container"
-              >
-                <Table
-                  className="projects-table"
-                  aria-label="ongoing projects table"
-                >
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        width="5%"
-                        className="table-header-cell"
-                      ></TableCell>
-                      <TableCell width="40%" className="table-header-cell">
-                        Project Title
-                      </TableCell>
-                      <TableCell width="20%" className="table-header-cell">
-                        Status
-                      </TableCell>
-                      <TableCell width="20%" className="table-header-cell">
-                        Team Members
-                      </TableCell>
-                      <TableCell
-                        width="15%"
-                        className="table-header-cell"
-                        align="center"
-                      >
-                        Actions
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {displayProjects.map((project) => (
-                      <TableRow key={project.id} className="table-row">
-                        <TableCell className="table-cell" width="5%">
-                          <FolderIcon color="action" />
-                        </TableCell>
-                        <TableCell className="table-cell" width="40%">
-                          <Typography
-                            variant="body1"
-                            className="project-title"
-                            onClick={() => handleViewProject(project.id)}
-                          >
-                            {project.title}
-                          </Typography>
-                        </TableCell>
-                        <TableCell className="status-cell" width="20%">
-                          {project.status}
-                        </TableCell>
-                        <TableCell className="members-cell" width="20%">
-                          {project.team_size}
-                        </TableCell>
-                        <TableCell
-                          className="table-cell"
-                          width="15%"
-                          align="center"
-                        >
-                          <Box className="actions-container">
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handleViewProject(project.id)}
-                              className="view-button"
-                            >
-                              View Project
-                            </Button>
-                            {userRole === "professor" && (
-                              <>
-                                <Tooltip title="Edit Project">
-                                  <IconButton
-                                    color="primary"
-                                    size="small"
-                                    onClick={() => setEditingProject(project)}
-                                    className="edit-button"
-                                  >
-                                    <EditIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete Project">
-                                  <IconButton
-                                    color="error"
-                                    size="small"
-                                    onClick={() => deleteProject(project.id)}
-                                  >
-                                    {" "}
-                                    <DeleteIcon />{" "}
-                                  </IconButton>
-                                </Tooltip>
-                              </>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-
-            {editingProject && (
-              <div style={{ marginTop: "2rem" }}>
-                <Typography variant="h6">Edit Project</Typography>
-                <ProjectForm
-                  mode="edit"
-                  userName={editingProject.team_lead || ""}
-                  initialData={editingProject}
-                  onSubmit={updateProject}
-                  onCancel={() => setEditingProject(null)}
-                  isSubmitting={isSubmitting}
-                />
-              </div>
-            )}
+      {isEditPageOpen && editingProject ? (
+        <div
+          className={`create-project-page ${isSidebarVisible ? "shifted" : ""}`}
+        >
+          <div className="breadcrumb">Ongoing Projects / Edit Project</div>
+          <div className="create-project-container">
+            <h2 className="page-title">Edit Project</h2>
+            <ProjectForm
+              mode="edit"
+              userName={editingProject.team_lead || ""}
+              initialData={editingProject}
+              onSubmit={updateProject}
+              onCancel={() => {
+                setEditingProject(null);
+                setIsEditPageOpen(false);
+              }}
+              isSubmitting={isSubmitting}
+            />
           </div>
         </div>
-      </div>
+      ) : (
+        <div className={`main-content ${isSidebarVisible ? "shifted" : ""}`}>
+          <div className="ongoingprojects">
+            <div className="header">
+              <Box
+                className="page-header"
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography variant="h5">Ongoing Projects</Typography>
+                <NotificationComponent
+                  userRole={String(localStorage.getItem("userRole"))}
+                />
+              </Box>
+            </div>
+            <div className="table-container">
+              {displayProjects.length === 0 ? (
+                <Typography variant="h6" className="page-header">
+                  You don't have any active projects yet 😀
+                </Typography>
+              ) : (
+                <TableContainer
+                  component={Paper}
+                  className="projects-table-container"
+                >
+                  <Table
+                    className="projects-table"
+                    aria-label="ongoing projects table"
+                  >
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          width="5%"
+                          className="table-header-cell"
+                        ></TableCell>
+                        <TableCell width="40%" className="table-header-cell">
+                          Project Title
+                        </TableCell>
+                        <TableCell width="20%" className="table-header-cell">
+                          Status
+                        </TableCell>
+                        <TableCell width="20%" className="table-header-cell">
+                          Team Members
+                        </TableCell>
+                        <TableCell
+                          width="15%"
+                          className="table-header-cell"
+                          align="center"
+                        >
+                          Actions
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {displayProjects.map((project) => (
+                        <TableRow key={project.id} className="table-row">
+                          <TableCell className="table-cell" width="5%">
+                            <FolderIcon color="action" />
+                          </TableCell>
+                          <TableCell className="table-cell" width="40%">
+                            <Typography
+                              variant="body1"
+                              className="project-title"
+                              onClick={() => handleViewProject(project.id)}
+                            >
+                              {project.title}
+                            </Typography>
+                          </TableCell>
+                          <TableCell className="status-cell" width="20%">
+                            {project.status}
+                          </TableCell>
+                          <TableCell className="members-cell" width="20%">
+                            {project.team_size}
+                          </TableCell>
+                          <TableCell
+                            className="table-cell"
+                            width="15%"
+                            align="center"
+                          >
+                            <Box className="actions-container">
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleViewProject(project.id)}
+                                className="view-button"
+                              >
+                                View Project
+                              </Button>
+                              {userRole === "professor" && (
+                                <>
+                                  <Tooltip title="Edit Project">
+                                    <IconButton
+                                      color="primary"
+                                      size="small"
+                                      onClick={() => {
+                                        setEditingProject(project);
+                                        setIsEditPageOpen(true);
+                                      }}
+                                      className="edit-button"
+                                    >
+                                      <EditIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Delete Project">
+                                    <IconButton
+                                      color="error"
+                                      size="small"
+                                      onClick={() => deleteProject(project.id)}
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                </>
+                              )}
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

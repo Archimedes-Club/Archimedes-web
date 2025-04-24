@@ -18,6 +18,7 @@ import Sidebar from "./Sidebar";
 import "../styles/ProjectDetail.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { NotificationComponent } from "./NotificationService";
+import { HamburgerToggle } from "./Sidebar";
 
 import { Project } from "../types/projects.types";
 import { ProjectMembership } from "../types/project_membership.types";
@@ -75,7 +76,7 @@ const ProjectDetail: React.FC = () => {
     onConfirm: () => {},
     confirmText: "Confirm",
   });
-  const {user} = useAppContext();
+  const { user } = useAppContext();
 
   const userId = localStorage.getItem("user_id");
 
@@ -204,14 +205,6 @@ const ProjectDetail: React.FC = () => {
     };
   };
 
-  /**
-   * useEffect to load project details and associated membership data (members + pending invites)
-   * when the component mounts or when projectId changes.
-   *
-   * - Fetches project information and membership list in parallel.
-   * - Categorizes members into 'active' members and 'pending' invites based on status.
-   * - Prevents state updates if the component is unmounted before data is received.
-   */
   useEffect(() => {
     let isMounted = true; // to check if the data is already loaded
 
@@ -227,7 +220,7 @@ const ProjectDetail: React.FC = () => {
 
         const projectData = projectRes.data.data;
 
-        if (!isMounted) return; 
+        if (!isMounted) return;
 
         setProject({
           id: projectData.id,
@@ -240,33 +233,30 @@ const ProjectDetail: React.FC = () => {
         });
 
         try {
+          const memberRes: any = await getProjectMembers(projectId);
+          const memberData = memberRes.data;
 
-        const memberRes:any = await getProjectMembers(projectId);
-        const memberData = memberRes.data;
-
-        console.log("memberData:", memberData);
-        if (Array.isArray(memberData)) {
-          memberData.forEach((element) => {
-            console.log("elemet:", element);
-
-            // eslint-disable-next-line eqeqeq
-            if (element.status == "pending") {
-              setPendingInvites((data) => [...data, element]);
-            } else {
+          console.log("memberData:", memberData);
+          if (Array.isArray(memberData)) {
+            memberData.forEach((element) => {
+              console.log("elemet:", element);
 
               // eslint-disable-next-line eqeqeq
-              if (element.role == "lead" && element.user_id == userId ){
-                setIsProjectlead(true);
+              if (element.status == "pending") {
+                setPendingInvites((data) => [...data, element]);
+              } else {
+                // eslint-disable-next-line eqeqeq
+                if (element.role == "lead" && element.user_id == userId) {
+                  setIsProjectlead(true);
+                }
+
+                setMembers((data) => [...data, element]);
               }
-              
-              setMembers((data) => [...data, element]);
-            }
-          });
-      
-        } else {
-          console.error("Expected array but got:", memberData);
-          setMembers([]);
-        }
+            });
+          } else {
+            console.error("Expected array but got:", memberData);
+            setMembers([]);
+          }
         } catch (err: any) {
           if (err.response?.status === 403) {
             console.warn("User not authorized to view members.");
@@ -274,7 +264,6 @@ const ProjectDetail: React.FC = () => {
             throw err;
           }
         }
-        
       } catch (error: any) {
         console.error("Error loading project or members:", error.message);
         alert(error.message);
@@ -303,13 +292,7 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="layout-container">
-      <IconButton
-        className="hamburger-menu"
-        onClick={toggleSidebar}
-        // style={{ left: isSidebarVisible && !isMobile ? 250 : 70 }}
-      >
-        <MenuIcon />
-      </IconButton>
+      <HamburgerToggle toggleSidebar={toggleSidebar} />
 
       <Sidebar
         isVisible={isSidebarVisible}
@@ -336,7 +319,9 @@ const ProjectDetail: React.FC = () => {
           >
             BACK TO PROJECTS
           </Button>
-          <NotificationComponent userRole={String(localStorage.getItem("userRole"))} />
+          <NotificationComponent
+            userRole={String(localStorage.getItem("userRole"))}
+          />
         </div>
 
         <div className="project-details">
@@ -436,7 +421,7 @@ const ProjectDetail: React.FC = () => {
                       </Typography>
                       <span className="member-role-chip">{member.role}</span>
                     </div>
-                    {isProjectLead&& (
+                    {isProjectLead && (
                       <Button
                         variant="outlined"
                         color="error"

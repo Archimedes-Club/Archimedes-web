@@ -7,8 +7,25 @@ import FolderIcon from "@mui/icons-material/Folder";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
+import MenuIcon from "@mui/icons-material/Menu";
+import { IconButton } from "@mui/material";
 import "../styles/DashboardSidebar.css";
 import { logout } from "../services/api/authServices";
+
+export const HamburgerToggle: React.FC<{ toggleSidebar: () => void }> = ({
+  toggleSidebar,
+}) => (
+  <IconButton
+    className="hamburger-menu"
+    onClick={toggleSidebar}
+    size="large"
+    edge="start"
+    color="inherit"
+    aria-label="menu"
+  >
+    <MenuIcon />
+  </IconButton>
+);
 
 interface SidebarProps {
   isVisible: boolean;
@@ -34,6 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
         {/* <button className="close-btn" onClick={onClose}>
           <CloseIcon />
         </button> */}
+
         <ul>
           <li onClick={() => navigate("/dashboard")}>
             <DashboardIcon />
@@ -51,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             <AccountCircleIcon />
             {isVisible && <span>Account</span>}
           </li> */}
-          <li>
+          <li onClick={() => navigate("/user-profile")}>
             <PersonIcon />
             {isVisible && <span>Profile</span>}
           </li>

@@ -37,12 +37,16 @@
   align-items: center;
   margin-bottom: 20px;
   padding-top: 10px;
+  font-weight: bold;
+  
 }
 
 .page-header {
   font-weight: 600;
   font-size: 1.5rem;
   color: #333;
+  
+  
 }
 
 .projects-table-container {

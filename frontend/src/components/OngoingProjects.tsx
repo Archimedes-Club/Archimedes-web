@@ -32,6 +32,8 @@ import {
 import { Project } from "../types/projects.types";
 import "../styles/OngoingProjects.css";
 import { getUser } from "../services/api/authServices";
+import { NotificationComponent } from "./NotificationService";
+import { HamburgerToggle } from "./Sidebar";
 
 const OngoingProjects: React.FC = () => {
   const navigate = useNavigate();
@@ -122,16 +124,7 @@ const OngoingProjects: React.FC = () => {
 
   return (
     <div className="layout-container">
-      <IconButton
-        className="hamburger-menu"
-        onClick={toggleSidebar}
-        size="large"
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-      >
-        <MenuIcon />
-      </IconButton>
+      <HamburgerToggle toggleSidebar={toggleSidebar} />
 
       <Sidebar
         isVisible={isSidebarVisible}
@@ -140,11 +133,20 @@ const OngoingProjects: React.FC = () => {
 
       <div className={`main-content ${isSidebarVisible ? "shifted" : ""}`}>
         <div className="ongoingprojects">
-          <div className="header">
+          <div
+            className="header"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="h5" className="page-header">
               Ongoing Projects
             </Typography>
+            <NotificationComponent userRole={userRole} />
           </div>
+
           <div className="table-container">
             {displayProjects.length === 0 ? (
               <Typography variant="h6" className="page-header">

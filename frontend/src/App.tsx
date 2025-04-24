@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
-import Home from "./components/Home"; // Import Home component 
+import Home from "./components/Home"; // Import Home component
 // import AllProjects from "./components/AllProjects";
 import "./SidebarToggle";
 import Registration from "./components/Registration";
@@ -16,7 +16,7 @@ import { useAuth } from "./hooks/useAuth";
 import { VerifyEmail } from "./components/VerifyEmail";
 import ProtectedRoute from "./ProtectedRoute";
 import ProjectDetail from "./components/ProjectDetail";
-
+import UserProfile from "./components/UserProfile";
 
 const App: React.FC = () => {
   return (
@@ -24,12 +24,11 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Registration />} />
-
         <Route
           path="/login"
           element={
             <PublicRoute>
-              <Login/>
+              <Login />
             </PublicRoute>
           }
         />
@@ -37,7 +36,7 @@ const App: React.FC = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard/>
+              <Dashboard />
             </ProtectedRoute>
           }
         />
@@ -53,32 +52,32 @@ const App: React.FC = () => {
           path="/ongoingprojects"
           element={
             <ProtectedRoute>
-              <OngoingProjects/>
-              </ProtectedRoute>
+              <OngoingProjects />
+            </ProtectedRoute>
           }
         />
         <Route
-          path= "/projects/:projectId"
+          path="/projects/:projectId"
           element={
             <ProtectedRoute>
-              <ProjectDetail/>
-              </ProtectedRoute>
+              <ProjectDetail />
+            </ProtectedRoute>
           }
         />
-        <Route 
-        path="/verify-email" 
-        element={
-          <ProtectedRoute requireVerified = {false}>
-            <VerifyEmail/>
-          </ProtectedRoute>
-        }
+        <Route
+          path="/verify-email"
+          element={
+            <ProtectedRoute requireVerified={false}>
+              <VerifyEmail />
+            </ProtectedRoute>
+          }
         />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/user-profile" element={<UserProfile />} />{" "}
+        {/* Profile page route */}
       </Routes>
     </Router>
   );
 };
-
 
 interface Props {
   children: React.ReactNode;

@@ -71,17 +71,21 @@ const Registration: React.FC = () => {
     }
 
     try {
-      const response:AxiosResponse | undefined = await registerUser(JSON.stringify(formData));
+      const response: AxiosResponse | undefined = await registerUser(
+        JSON.stringify(formData)
+      );
 
       // const data = await response;
       localStorage.setItem("userRole", response?.data.role); // Store role (professor/student)
       localStorage.setItem("userName", response?.data.name); // Store user name
+      localStorage.setItem("userPhone", response?.data.phone); // Store phone
+      localStorage.setItem("userLinkedin", response?.data.linkedin_url); // Store LinkedIn URL
+
       alert("Registration successful!");
 
       await login(formData.email, formData.password);
 
-      // If the registered user is a professor, show a dialogue box stating that we saved his information as professor, and he can perform so and so actions
-
+      
       navigate("/verify-email");
     } catch (error) {
       console.error("Error registering:", error);

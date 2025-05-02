@@ -1,39 +1,266 @@
 /* Landing page UI */
-.coming-soon-container {
-    display: flex;
+
+/* Container and Layout */
+.landing-container {
+  font-family: "Arial", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  color: #333333;
+  position: relative;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333333;
+}
+
+/* Nav links default (desktop) */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav a,
+.nav-link {
+  margin: 0 12px;
+  text-decoration: none;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+
+.nav-link:hover,
+.nav a:hover {
+  color: #6a11cb;
+}
+
+.nav .login-btn {
+  margin-left: 12px;
+  color:#ffffff
+}
+
+/* Hamburger icon (mobile only) */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+/* Banner */
+.banner {
+  text-align: center;
+  padding: 80px 20px;
+  background-color: #f9f9f9;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333333;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  color: #666666;
+}
+
+/* Reusable Button */
+.login-btn {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  background-color: #6a11cb;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  text-decoration: none;
+}
+
+.login-btn:hover {
+  background-color: #2575fc;
+}
+
+/* About Section */
+.about {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #ffffff;
+}
+
+.about h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.about p {
+  font-size: 1rem;
+  color: #666666;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Mission and Vision Cards */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  padding: 60px 20px;
+  background-color: #f5f5f5;
+  margin-top: 1%;
+}
+
+.card {
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 12px;
+  padding: 30px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+  color: #6a11cb;
+}
+
+.card p {
+  font-size: 1rem;
+  color: #666666;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #ffffff;
+  font-size: 0.9rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer p {
+  color: #999999;
+}
+
+.social a {
+  margin: 0 10px;
+  color: #6a11cb;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.social a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ Responsive Styles */
+
+/* Mobile: Hamburger Menu */
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+    position: absolute;
+    right: 24px;
+    top: 24px;
+    z-index: 20;
+  }
+
+  .nav {
+    display: none;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #6a11cb, #6a11cb);
-    color: white;
-    text-align: center;
-    font-family: "Arial", sans-serif;
-  }
-  
-  .coming-soon-title {
-    font-size: 3rem;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-  
-  .coming-soon-text {
-    font-size: 1.5rem;
-    margin-bottom: 30px;
-  }
-  
-  .login-btn {
-    padding: 12px 24px;
-    font-size: 1.2rem;
+    align-items: flex-start;
+    position: absolute;
+    top: 70px;
+    right: 20px;
     background-color: white;
-    color: #6a11cb;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: 0.3s;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    z-index: 1000;
+    min-width: 160px;
   }
-  
-  .login-btn:hover {
-    background-color: #2575fc;
-    color: white;
+
+  .nav.open {
+    display: flex;
   }
+
+  .nav-link,
+  .nav .login-btn {
+    margin: 10px 0;
+    width: 100%;
+    color:white
+  }
+
+  .header {
+    padding: 16px 24px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+  }
+
+  .card {
+    width: 90%;
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .login-btn {
+    font-size: 1rem;
+    padding: 10px 20px;
+    
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .about h2 {
+    font-size: 1.5rem;
+  }
+
+  .about p {
+    font-size: 0.95rem;
+  }
+}

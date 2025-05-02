@@ -12,9 +12,11 @@
     "start-frontend": "cd frontend && npm run start",
     "start-backend": "cd laravel-backend && php artisan serve",
     "start-frontend-backend": "npm run start-frontend && npm run start-backend"
-    
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "react-scroll": "^1.9.3"
+  }
 }

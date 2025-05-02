@@ -12,7 +12,6 @@
     "start-frontend": "cd frontend && npm run start",
     "start-backend": "cd laravel-backend && php artisan serve",
     "start-frontend-backend": "npm run start-frontend && npm run start-backend"
-    
   },
   "keywords": [],
   "author": "",

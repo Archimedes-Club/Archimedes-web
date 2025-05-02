@@ -8,6 +8,8 @@ use App\Http\Resources\v1\ProjectCollection;
 use App\Http\Resources\v1\ProjectResource;
 use App\Models\Project;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
 
 class ProjectController extends Controller
 {
@@ -71,11 +73,19 @@ class ProjectController extends Controller
 
         // A user with role == Student cannot update project
         $role = $request->user()->role;
-        if ($role == "student" || $role == "Student"){
+
+        $isLead = $request->user()->projects()
+                                    ->where('project_id', $id)
+                                    ->wherePivot("role", "lead")
+                                    ->exists();
+
+        if (!$isLead){
             return response()->json([
                 "message" => "You're not authorized to perform this action"
             ], 403);
         }
+
+
 
         $project = Project::find($id);
         
@@ -94,10 +104,22 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         // A user with role == Student cannot delete a project
         $role = auth()->user()->role;
+
+        $isLead = $request->user()->projects()
+                                    ->where('project_id', $id)
+                                    ->wherePivot("role", "lead")
+                                    ->exists();
+
+        if (!$isLead){
+            return response()->json([
+                "message" => "You're not authorized to perform this action"
+            ], 403);
+        }
+
         if ($role == "student" || $role == "Student"){
             return response()->json([
                 "message" => "You're not authorized to perform this action"

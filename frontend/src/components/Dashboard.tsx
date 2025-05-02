@@ -53,6 +53,7 @@ const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = "Dashboard";
     const fetchUserData = async () => {
       try {
         const userData = await getUser();

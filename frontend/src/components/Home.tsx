@@ -9,6 +9,10 @@ const ComingSoon: React.FC = () => {
   const navigate = useNavigate();
   const {isAuthenticated} = useAuth();
 
+  useEffect(()=>{
+    document.title = "Archimedes Club"
+  }, [])
+
   return (
     <div className="coming-soon-container">
       <motion.h1

@@ -99,6 +99,7 @@ class ProjectMembershipController extends Controller
 
         // Check if a project_membership with the auth user as lead to the project is present
         $authUser = $request->user();
+
         $isLead = $authUser->projects()
                             ->where('project_id', $request->project_id)
                             ->wherePivot('role', 'lead')
@@ -258,7 +259,7 @@ class ProjectMembershipController extends Controller
                             ->exists();
     
         // Return unauthorized error if the auth user is not a lead
-        if ($authUser->id != $request->user_id & !$isLead){
+        if ($authUser->id != $request->user_id && !$isLead){
             return response()->json([
                 'message' => "The user is not authenticated to perform this action"
             ], 403);

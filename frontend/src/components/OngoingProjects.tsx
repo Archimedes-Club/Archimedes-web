@@ -52,6 +52,7 @@ const OngoingProjects: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = "Ongoing Projects";
     const loadProjects = async () => {
       try {
         const response = await getUserProjects();

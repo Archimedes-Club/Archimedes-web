@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -19,6 +19,9 @@ import ProjectDetail from "./components/ProjectDetail";
 import UserProfile from "./components/UserProfile";
 
 const App: React.FC = () => {
+  useEffect(()=>{
+    document.title = "Archimedes Club"; 
+  },[])
   return (
     <Router>
       <Routes>

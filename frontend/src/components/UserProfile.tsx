@@ -15,6 +15,7 @@ const UserProfile: React.FC = () => {
   const [updatedLinkedIn, setUpdatedLinkedIn] = useState<string>("");
 
   useEffect(() => {
+    document.title = "Account";
     setUpdatedPhone(userData?.phone || "");
     setUpdatedLinkedIn(userData?.linkedin_url || "");
   }, [userData]);

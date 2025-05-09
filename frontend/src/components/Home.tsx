@@ -110,6 +110,10 @@ const LandingPage: React.FC = () => {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
+  useEffect(()=>{
+    document.title = "Archimedes Club"
+  }, [])
+
   return (
     <div className="landing-container">
       {/* Header */}

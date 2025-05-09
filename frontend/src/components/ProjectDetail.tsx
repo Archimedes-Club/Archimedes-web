@@ -232,6 +232,7 @@ const ProjectDetail: React.FC = () => {
           team_lead: projectData.team_lead,
         });
 
+        document.title = projectData.title;
         try {
           const memberRes: any = await getProjectMembers(projectId);
           const memberData = memberRes.data;

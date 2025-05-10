@@ -1,78 +1,138 @@
+// src/__tests__/components/Login.test.tsx
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Login from "../../components/Login";
-import { useNavigate } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { login } from "../../services/api/authServices";
 
-// Mock the useNavigate hook from react-router-dom
-jest.mock("react-router-dom", () => {
-  const originalModule = jest.requireActual("react-router-dom");
-  return {
-    ...originalModule,
-    useNavigate: jest.fn(),
-  };
-});
+// Mock the login function from authServices
+jest.mock("../../services/api/authServices");
+
+// Preserve the original window.location
+const originalLocation = window.location;
 
 describe("Login Component", () => {
-  let mockNavigate: jest.Mock;
+  beforeAll(() => {
+    // Use Object.defineProperty to override window.location.reload
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: {
+        ...originalLocation,
+        reload: jest.fn(),
+      },
+    });
+  });
+
+  afterAll(() => {
+    // Restore the original window.location after all tests
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: originalLocation,
+    });
+  });
 
   beforeEach(() => {
-    // Setup a new mock function for each test
-    mockNavigate = jest.fn();
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    localStorage.clear();
+    jest.clearAllMocks();
+    // Spy on window.alert to avoid actual alerts during tests
+    jest.spyOn(window, "alert").mockImplementation(() => {});
   });
 
   test("renders login form correctly", () => {
-    render(<Login />);
+    const { container } = render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
     
-    // Check if login heading, input labels, and login button are rendered
-    expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Username")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument();
+    // Use role 'heading' to get the <h2> element and 'button' for the submit button.
+    expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^login$/i })).toBeInTheDocument();
+
+    // Select the email and password inputs by querying the DOM directly
+    const emailInput = container.querySelector("input[type='email']");
+    const passwordInput = container.querySelector("input[type='password']");
+    expect(emailInput).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
   });
 
-  test("successful login with correct credentials", async () => {
-    render(<Login />);
+  test("alerts if email or password is empty on submit", () => {
+    render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
     
-    // Get form fields and button
-    const usernameInput = screen.getByLabelText("Username");
-    const passwordInput = screen.getByLabelText("Password");
-    const loginButton = screen.getByRole("button", { name: "Login" });
-    
-    // Enter valid credentials (hardcoded as "admin" and "password123")
-    fireEvent.change(usernameInput, { target: { value: "admin" } });
+    // Click submit without changing anything.
+    const submitButton = screen.getByRole("button", { name: /^login$/i });
+    fireEvent.submit(submitButton);
+
+    expect(window.alert).toHaveBeenCalledWith("Please enter email and password");
+  });
+
+  test("calls login API and handles successful login", async () => {
+    // Set up the mock for a successful login response.
+    const userMock = { name: "John Doe" };
+    (login as jest.Mock).mockResolvedValue({ user: userMock });
+
+    const { container } = render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
+
+    // Select inputs directly using querySelector.
+    const emailInput = container.querySelector("input[type='email']") as HTMLInputElement;
+    const passwordInput = container.querySelector("input[type='password']") as HTMLInputElement;
+    const submitButton = screen.getByRole("button", { name: /^login$/i });
+
+    // Simulate user entering credentials.
+    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
     fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(loginButton);
-    
-    // Wait for navigation to be called and assert navigation was performed correctly
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
-    });
-    
-    // Check that localStorage contains the auth token
-    expect(localStorage.getItem("authToken")).toBe("your-auth-token");
+    fireEvent.submit(submitButton);
+
+    await waitFor(() =>
+      expect(login).toHaveBeenCalledWith("john@example.com", "password123")
+    );
+    await waitFor(() =>
+      expect(window.alert).toHaveBeenCalledWith("Logged in as John Doe")
+    );
+    expect(window.location.reload).toHaveBeenCalled();
   });
 
-  test("shows error message with incorrect credentials", async () => {
-    render(<Login />);
+  test("calls login API and handles error", async () => {
+    const errorMsg = "Invalid credentials";
+    // Mock the login function to reject with an Error instance
+    (login as jest.Mock).mockRejectedValue(new Error(errorMsg));
+  
+    const { container } = render(
+      <BrowserRouter>
+        <Login />
+      </BrowserRouter>
+    );
+  
+    const emailInput = container.querySelector("input[type='email']") as HTMLInputElement;
+    const passwordInput = container.querySelector("input[type='password']") as HTMLInputElement;
+    const submitButton = screen.getByRole("button", { name: /^login$/i });
+  
+    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "wrongpassword" } });
+    fireEvent.submit(submitButton);
+  
+    await waitFor(() =>
+      expect(login).toHaveBeenCalledWith("john@example.com", "wrongpassword")
+    );
     
-    // Get form fields and button
-    const usernameInput = screen.getByLabelText("Username");
-    const passwordInput = screen.getByLabelText("Password");
-    const loginButton = screen.getByRole("button", { name: "Login" });
-    
-    // Enter invalid credentials
-    fireEvent.change(usernameInput, { target: { value: "wrongUser" } });
-    fireEvent.change(passwordInput, { target: { value: "wrongPassword" } });
-    fireEvent.click(loginButton);
-    
-    // Assert that the error message is displayed
-    const errorMessage = await screen.findByText("Invalid username or password");
-    expect(errorMessage).toBeInTheDocument();
-    
-    // Ensure that navigation is not called and no token is set
-    expect(mockNavigate).not.toHaveBeenCalled();
-    expect(localStorage.getItem("authToken")).toBeNull();
+    await waitFor(() => {
+      // Make sure alert was called at least once
+      expect(window.alert).toHaveBeenCalled();
+      // Retrieve the first argument passed to window.alert
+      const alertArg = (window.alert as jest.Mock).mock.calls[0][0];
+      
+      // Assert that the argument is an instance of Error and its message contains our expected error
+      expect(alertArg).toBeInstanceOf(Error);
+      expect(alertArg.message).toContain(errorMsg);
+    });
   });
 });

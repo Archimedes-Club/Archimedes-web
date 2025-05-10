@@ -1,14 +1,29 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import Home from "../../components/Home"; 
+import { BrowserRouter } from "react-router-dom";
+import ComingSoon from "../../components/Home";
 import { useNavigate } from "react-router-dom";
 
-// Mock the useNavigate ho../../src/components/ok from react-router-dom
-jest.mock("react-router-dom", () => {
-  const originalModule = jest.requireActual("react-router-dom");
+// Mock the useNavigate hook
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: jest.fn(),
+}));
+
+// Mock framer-motion to avoid animation issues in tests
+jest.mock("framer-motion", () => {
+  const originalModule = jest.requireActual("framer-motion");
   return {
     ...originalModule,
-    useNavigate: jest.fn(),
+    motion: {
+      h1: ({ children, ...props }) => <h1 {...props}>{children}</h1>,
+      p: ({ children, ...props }) => <p {...props}>{children}</p>,
+      button: ({ children, onClick, ...props }) => (
+        <button onClick={onClick} {...props}>
+          {children}
+        </button>
+      ),
+    },
   };
 });
 
@@ -20,26 +35,30 @@ describe("Home Component", () => {
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   });
 
-  test("renders Home component correctly", () => {
-    render(<Home />);
-    
-    // Update the expected heading text to match the rendered component
+  test("renders coming soon page correctly", () => {
+    render(
+      <BrowserRouter>
+        <ComingSoon />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByText("Archimedes Club")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /archimedes club/i })
+      screen.getByText(/Something amazing is coming soon/i)
     ).toBeInTheDocument();
-    
-    // Check for the login button as well
-    expect(
-      screen.getByRole("button", { name: /login/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
-  test("navigates to /login when the login button is clicked", () => {
-    render(<Home />);
-    
+  test("navigates to login page when login button is clicked", () => {
+    render(
+      <BrowserRouter>
+        <ComingSoon />
+      </BrowserRouter>
+    );
+
     const loginButton = screen.getByRole("button", { name: /login/i });
     fireEvent.click(loginButton);
-    
+
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 });

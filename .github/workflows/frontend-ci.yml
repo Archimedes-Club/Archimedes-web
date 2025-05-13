@@ -10,6 +10,7 @@ on:
     branches: [ unit-test ]
     paths:
       - 'frontend/**'
+  workflow_dispatch:
 
 jobs:
   frontend-tests:

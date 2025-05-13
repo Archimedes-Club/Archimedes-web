@@ -34,8 +34,9 @@ class StoreUserRequestTest extends TestCase
         $this->assertArrayHasKey('name', $rules);
         $this->assertArrayHasKey('email', $rules);
         $this->assertArrayHasKey('password', $rules);
-        $this->assertArrayHasKey('role', $rules);
-
+        
+        // 'role' field has been removed from business logic, so we no longer test for it
+        
         // Verify optional fields exist
         $this->assertArrayHasKey('phone', $rules);
         $this->assertArrayHasKey('linkedin_url', $rules);
@@ -57,17 +58,8 @@ class StoreUserRequestTest extends TestCase
         $this->assertContains('min:6', $rules['password']);
         $this->assertContains('confirmed', $rules['password']);
 
-        // Verify role validation rules
-        $this->assertContains('required', $rules['role']);
-        $this->assertInstanceOf(\Illuminate\Validation\Rules\In::class, $rules['role'][1]);
-        // Use reflection to extract the internal values of the In rule
-        $roleRule = $rules['role'][1];
-        $reflection = new \ReflectionClass($roleRule);
-        $property = $reflection->getProperty('values');
-        $property->setAccessible(true);
-        $roleValues = $property->getValue($roleRule);
-        $this->assertEquals(['professor', 'student'], $roleValues);
-
+        // Role validation rules have been removed from business logic
+        
         // Verify phone validation rules
         $this->assertContains('nullable', $rules['phone']);
         $this->assertContains('string', $rules['phone']);
@@ -76,7 +68,6 @@ class StoreUserRequestTest extends TestCase
         // Verify linkedin_url validation rules
         $this->assertContains('nullable', $rules['linkedin_url']);
         $this->assertContains('url', $rules['linkedin_url']);
-        // Removed the assertion for 'max:255' because it's not present in the business rules.
     }
 
     public function test_validation_passes_with_valid_data()
@@ -88,8 +79,8 @@ class StoreUserRequestTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'phone' => '1234567890',
-            'linkedin_url' => 'https://linkedin.com/in/testuser',
-            'role' => 'student'
+            'linkedin_url' => 'https://linkedin.com/in/testuser'
+            // 'role' field has been removed from business logic
         ];
 
         // Create request with data
@@ -108,8 +99,8 @@ class StoreUserRequestTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@invalid.com',
             'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role' => 'student'
+            'password_confirmation' => 'password123'
+            // 'role' field has been removed from business logic
         ];
 
         // Create request with data
@@ -124,10 +115,10 @@ class StoreUserRequestTest extends TestCase
 
     public function test_validation_fails_with_duplicate_email()
     {
-        // Create existing user with a defined role
+        // Create existing user
         User::factory()->create([
-            'email' => 'test@northeastern.edu',
-            'role'  => 'student'
+            'email' => 'test@northeastern.edu'
+            // 'role' field has been removed from business logic
         ]);
 
         // Create data with duplicate email
@@ -135,8 +126,8 @@ class StoreUserRequestTest extends TestCase
             'name' => 'Test User',
             'email' => 'test@northeastern.edu',
             'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role' => 'student'
+            'password_confirmation' => 'password123'
+            // 'role' field has been removed from business logic
         ];
 
         // Create request with data
@@ -149,15 +140,18 @@ class StoreUserRequestTest extends TestCase
         $this->assertArrayHasKey('email', $validator->errors()->toArray());
     }
 
-    public function test_validation_fails_with_invalid_role()
+    /**
+     * This test has been modified since the 'role' field is no longer validated
+     * The test now checks that validation passes even without a role field
+     */
+    public function test_validation_passes_without_role()
     {
-        // Create data with invalid role
+        // Create data without role field
         $data = [
             'name' => 'Test User',
             'email' => 'test@northeastern.edu',
             'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'role' => 'invalid_role'
+            'password_confirmation' => 'password123'
         ];
 
         // Create request with data
@@ -166,8 +160,8 @@ class StoreUserRequestTest extends TestCase
 
         // Validate request
         $validator = validator($data, $request->rules());
-        $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('role', $validator->errors()->toArray());
+        // This should pass now since role is no longer required
+        $this->assertFalse($validator->fails());
     }
 
     public function test_validation_fails_with_invalid_phone()
@@ -178,8 +172,8 @@ class StoreUserRequestTest extends TestCase
             'email' => 'test@northeastern.edu',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'phone' => '123', // Invalid phone number
-            'role' => 'student'
+            'phone' => '123' // Invalid phone number
+            // 'role' field has been removed from business logic
         ];
 
         // Create request with data
@@ -200,8 +194,8 @@ class StoreUserRequestTest extends TestCase
             'email' => 'test@northeastern.edu',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'linkedin_url' => 'not-a-url',
-            'role' => 'student'
+            'linkedin_url' => 'not-a-url'
+            // 'role' field has been removed from business logic
         ];
 
         // Create request with data

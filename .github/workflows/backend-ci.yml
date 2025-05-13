@@ -3,11 +3,11 @@ name: Backend CI
 # Trigger the workflow only when there are changes in the "laravel-backend" folder on the unit-test branch.
 on:
   push:
-    branches: [ unit-test ]
+    branches: [ main ]
     paths:
       - 'laravel-backend/**'
   pull_request:
-    branches: [ unit-test ]
+    branches: [ main ]
     paths:
       - 'laravel-backend/**'
   workflow_dispatch:

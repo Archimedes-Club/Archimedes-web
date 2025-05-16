@@ -1,0 +1,76 @@
+name: Backend CI
+
+# Trigger the workflow only when there are changes in the "laravel-backend" folder on the unit-test branch.
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'laravel-backend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'laravel-backend/**'
+  workflow_dispatch:
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: archimedesdb_testing
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, curl, libxml, xml, xmlreader, xmlwriter, zip, pdo_mysql
+        coverage: none
+
+    - uses: actions/checkout@v3
+
+    - name: Copy .env.testing
+      working-directory: ./laravel-backend
+      run: php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+
+    - name: Install Dependencies
+      working-directory: ./laravel-backend
+      run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Generate key
+      working-directory: ./laravel-backend
+      run: php artisan key:generate --env=testing
+
+    - name: Directory Permissions
+      working-directory: ./laravel-backend
+      run: chmod -R 777 storage bootstrap/cache
+
+    - name: Create Database
+      run: |
+        mysql --host=127.0.0.1 --port=3306 --user=root --password=root -e "CREATE DATABASE IF NOT EXISTS archimedesdb_testing;"
+
+    - name: Run Migrations
+      working-directory: ./laravel-backend
+      env:
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_USERNAME: root
+        DB_PASSWORD: root
+        DB_DATABASE: archimedesdb_testing
+      run: php artisan migrate --env=testing --force
+
+    - name: Run Tests
+      working-directory: ./laravel-backend
+      env:
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_USERNAME: root
+        DB_PASSWORD: root
+        DB_DATABASE: archimedesdb_testing
+      run: php artisan test

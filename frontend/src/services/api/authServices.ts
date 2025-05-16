@@ -60,8 +60,9 @@ export const getCsrfToken = async () =>{
     try{
         await api.get("sanctum/csrf-cookie");
 
+        
         // Extract XSRF-TOKEN from cookies
-        const csrfToken = getCookie("XSRF-TOKEN"); 
+        const csrfToken = getCookie("XSRF-TOKEN");
         if (csrfToken) {
             const decodedToken = decodeURIComponent(csrfToken); // Decode the token
             // Store decoded token in cookies manually (optional)

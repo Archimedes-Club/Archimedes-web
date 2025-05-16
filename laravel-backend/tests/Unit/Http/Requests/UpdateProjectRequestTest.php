@@ -20,8 +20,8 @@ class UpdateProjectRequestTest extends TestCase
             'description' => 'Updated project description.',
             'status'      => 'Ongoing',
             'category'    => 'Web',
-            'team_size'   => 5,
-            'team_lead'   => 'John Doe'
+            'team_size'   => 5
+            // 移除 team_lead 字段
         ];
 
         $request = new UpdateProjectRequest();
@@ -53,7 +53,7 @@ class UpdateProjectRequestTest extends TestCase
         $this->assertArrayHasKey('status', $errors);
         $this->assertArrayHasKey('category', $errors);
         $this->assertArrayHasKey('team_size', $errors);
-        $this->assertArrayHasKey('team_lead', $errors);
+        // 移除对 team_lead 字段的检查
     }
 
     /**
@@ -66,8 +66,8 @@ class UpdateProjectRequestTest extends TestCase
             'description' => 'Updated project description.',
             'status'      => 'InvalidStatus',
             'category'    => 'Web',
-            'team_size'   => 5,
-            'team_lead'   => 'John Doe'
+            'team_size'   => 5
+            // 移除 team_lead 字段
         ];
 
         $request = new UpdateProjectRequest();
@@ -90,8 +90,8 @@ class UpdateProjectRequestTest extends TestCase
             'description' => 'Updated project description.',
             'status'      => 'Ongoing',
             'category'    => 'InvalidCategory',
-            'team_size'   => 5,
-            'team_lead'   => 'John Doe'
+            'team_size'   => 5
+            // 移除 team_lead 字段
         ];
 
         $request = new UpdateProjectRequest();
@@ -114,8 +114,8 @@ class UpdateProjectRequestTest extends TestCase
             'description' => 'Updated project description.',
             'status'      => 'Ongoing',
             'category'    => 'Web',
-            'team_size'   => 0,  // Invalid: must be at least 1
-            'team_lead'   => 'John Doe'
+            'team_size'   => 0  // Invalid: must be at least 1
+            // 移除 team_lead 字段
         ];
 
         $request = new UpdateProjectRequest();

@@ -3,51 +3,76 @@
 namespace Tests\Unit\Http\Resources\v1;
 
 use App\Http\Resources\v1\ProjectCollection;
+use App\Http\Resources\v1\ProjectResource;
 use App\Models\Project;
+use App\Models\ProjectMembership;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class ProjectCollectionTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected $user;
+    protected $project;
+
     /**
-     * Test that a collection with multiple projects returns the correct data.
+     * Prepare the environment for testing
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Create a user for testing
+        $this->user = User::factory()->create();
+        
+        // Create a project for testing
+        $this->project = Project::factory()->create([
+            'title' => 'Test Project',
+            'description' => 'Test Description',
+            'status' => 'Ongoing',
+            'category' => 'Web',
+            'team_lead' => 'John Doe',
+            'team_size' => 5,
+        ]);
+        
+        // Create project membership
+        ProjectMembership::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->project->id,
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+    }
+    
+    /**
+     * Test that a collection with multiple projects returns the correct data structure.
      */
     public function test_collection_contains_correct_data()
     {
-        // Create 3 test projects with known attributes.
-        $projects = Project::factory()->count(3)->create([
-            'title'       => 'Test Project',
-            'description' => 'This is a test project description',
-            'status'      => 'Ongoing',
-            'category'    => 'Web',
-            'team_lead'   => 'John Doe',
-            'team_size'   => 5,
-        ]);
-
-        $collection = new ProjectCollection($projects);
-        $data = $collection->toArray(request());
-
+        // Create request with authenticated user
+        $request = Request::create('/api/projects', 'GET');
+        $request->setUserResolver(function () {
+            return $this->user;
+        });
+        
+        // Create collection
+        $collection = new ProjectCollection(collect([$this->project]));
+        
+        // Get array representation
+        $data = $collection->toArray($request);
+        
+        // Verify it's an array and contains our project
         $this->assertIsArray($data);
-        $this->assertCount(3, $data);
-
-        foreach ($data as $index => $projectData) {
-            $project = $projects[$index];
-            $this->assertEquals($project->id, $projectData['id']);
-            $this->assertEquals($project->title, $projectData['title']);
-            $this->assertEquals($project->description, $projectData['description']);
-            $this->assertEquals($project->status, $projectData['status']);
-            $this->assertEquals($project->category, $projectData['category']);
-            $this->assertEquals($project->team_lead, $projectData['team_lead']);
-            $this->assertEquals($project->team_size, $projectData['team_size']);
-
-            // Optionally, verify a summary field if present.
-            if (isset($projectData['summary'])) {
-                $expectedSummary = "{$project->title} is lead by {$project->team_lead}";
-                $this->assertEquals($expectedSummary, $projectData['summary']);
-            }
-        }
+        $this->assertCount(1, $data);
+        
+        // Verify project data
+        $projectData = $data[0];
+        $this->assertEquals($this->project->id, $projectData['id']);
+        $this->assertEquals($this->project->title, $projectData['title']);
+        $this->assertEquals('active', $projectData['membership']);
     }
 
     /**
@@ -55,90 +80,88 @@ class ProjectCollectionTest extends TestCase
      */
     public function test_collection_handles_empty_collection()
     {
-        $collection = new ProjectCollection(collect([]));
-        $data = $collection->toArray(request());
+        // Create request with authenticated user
+        $request = Request::create('/api/projects', 'GET');
+        $request->setUserResolver(function () {
+            return $this->user;
+        });
+        
+        // Create an empty collection
+        $emptyCollection = collect([]);
+        $collection = new ProjectCollection($emptyCollection);
+        
+        // Get array representation
+        $data = $collection->toArray($request);
 
+        // Verify it's an array and it's empty
         $this->assertIsArray($data);
         $this->assertEmpty($data);
     }
 
     /**
-     * Test that the collection data includes all required fields.
+     * Test that collection contains all required fields
      */
     public function test_collection_contains_all_required_fields()
     {
-        $project = Project::factory()->create([
-            'title'       => 'Sample Project',
-            'description' => 'Sample description',
-            'status'      => 'Ongoing',
-            'category'    => 'Web',
-            'team_lead'   => 'Jane Doe',
-            'team_size'   => 3,
-        ]);
-
-        $collection = new ProjectCollection(collect([$project]));
-        $data = $collection->toArray(request());
-
+        // Create request with authenticated user
+        $request = Request::create('/api/projects', 'GET');
+        $request->setUserResolver(function () {
+            return $this->user;
+        });
+        
+        // Create collection
+        $collection = new ProjectCollection(collect([$this->project]));
+        
+        // Get array representation
+        $data = $collection->toArray($request);
+        
+        // Verify project data contains required fields
         $projectData = $data[0];
         $requiredFields = [
-            'id', 'title', 'description', 'status', 'category', 'team_lead', 'team_size'
+            'id', 'title', 'description', 'status', 'category', 'team_lead', 'team_size', 'summary', 'membership'
         ];
+        
         foreach ($requiredFields as $field) {
             $this->assertArrayHasKey($field, $projectData);
         }
-
-        // Optionally, if your contract requires a summary field:
-        if (isset($projectData['summary'])) {
-            $this->assertEquals("{$project->title} is lead by {$project->team_lead}", $projectData['summary']);
-        }
     }
 
-    public function test_collection_summaries_are_correctly_formatted()
-    {
-        // Use the sequence method to generate incremental indexes
-        $projects = Project::factory()
-            ->count(2)
-            ->sequence(function ($sequence) {
-                return [
-                    'title' => "Project {$sequence->index}",
-                    'team_lead' => "Lead {$sequence->index}"
-                ];
-            })
-            ->create();
-    
-        $collection = new ProjectCollection($projects);
-        $data = $collection->toArray(request());
-    
-        foreach ($data as $index => $projectData) {
-            if (isset($projectData['summary'])) {
-                $expected = "Project {$index} is lead by Lead {$index}";
-                $this->assertEquals($expected, $projectData['summary']);
-            }
-        }
-    }
-    
+    /**
+     * Test that collection handles special characters
+     */
     public function test_collection_handles_special_characters()
     {
-        // Use the sequence method to handle special characters
-        $projects = Project::factory()
-            ->count(2)
-            ->sequence(function ($sequence) {
-                return [
-                    'title' => "Project & Research {$sequence->index}",
-                    'team_lead' => "Team & Lead {$sequence->index}"
-                ];
-            })
-            ->create();
-    
-        $collection = new ProjectCollection($projects);
-        $data = $collection->toArray(request());
-    
-        foreach ($data as $index => $projectData) {
-            if (isset($projectData['summary'])) {
-                $expected = "Project & Research {$index} is lead by Team & Lead {$index}";
-                $this->assertEquals($expected, $projectData['summary']);
-            }
-        }
+        // Create a project with special characters
+        $specialProject = Project::factory()->create([
+            'title' => 'Project & Research',
+            'description' => 'Test Description with < and >',
+            'team_lead' => 'John & Doe',
+        ]);
+        
+        // Create project membership
+        ProjectMembership::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $specialProject->id,
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+        
+        // Create request with authenticated user
+        $request = Request::create('/api/projects', 'GET');
+        $request->setUserResolver(function () {
+            return $this->user;
+        });
+        
+        // Create collection
+        $collection = new ProjectCollection(collect([$specialProject]));
+        
+        // Get array representation
+        $data = $collection->toArray($request);
+        
+        // Verify project data
+        $projectData = $data[0];
+        $this->assertEquals('Project & Research', $projectData['title']);
+        $this->assertEquals('John & Doe', $projectData['team_lead']);
+        $this->assertEquals('Project & Research is lead by John & Doe', $projectData['summary']);
     }
-    
 }

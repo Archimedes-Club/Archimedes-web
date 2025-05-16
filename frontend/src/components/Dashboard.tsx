@@ -173,9 +173,8 @@ const Dashboard: React.FC = () => {
               Welcome{" "}
               {userRole === "professor" ? `Prof. ${userName}` : userName}
             </h2>
-            <div style={{ position: "relative" }}>
-              <NotificationComponent userRole={userRole} />
-            </div>
+
+            <NotificationComponent userRole={userRole} />
           </div>
 
           <div className="buttons">

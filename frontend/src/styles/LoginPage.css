@@ -1,5 +1,5 @@
 /* Login Page */
-.login-container {
+ .login-container {
     max-width: 400px;
     margin: 100px auto;
     padding: 20px;
@@ -35,4 +35,78 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
+  } 
+
+
+/* Forgot Password Link */
+.forgot-password-link {
+  text-align: right;
+  margin: 0;
+  margin-bottom: 15px;
+}
+
+.forgot-password-link a {
+  color: #6b46c1;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.forgot-password-link a:hover {
+  color: #553c9a;
+  text-decoration: underline;
+}
+
+
+/* Reset Password Page */
+.reset-password-container {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.reset-password-container h2 {
+  margin-bottom: 20px;
+}
+
+.reset-password-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.reset-password-container label {
+  margin-bottom: 5px;
+}
+
+.reset-password-container input {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.reset-password-container button {
+  padding: 10px 15px;
+  background-color: #6b46c1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.back-to-login {
+  text-align: center;
+}
+
+.back-to-login a {
+  color: #6b46c1;
+  text-decoration: none;
+}
+
+.back-to-login a:hover {
+  text-decoration: underline;
+}

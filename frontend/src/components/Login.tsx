@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/api/authServices";
 import { useAppContext } from "../context/AppContext";
+import "../styles/LoginPage.css"; // Import your CSS styles
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const {user, setUser} = useAppContext();
+  const { user, setUser } = useAppContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ const Login: React.FC = () => {
     }
     try {
       const responseData = await login(email, password);
-      
+
       localStorage.setItem("userRole", responseData.user.role); // Store role (professor/student)
       localStorage.setItem("userName", responseData.user.name); // Store user name
       localStorage.setItem("user_id", responseData.user.id);
@@ -27,8 +28,8 @@ const Login: React.FC = () => {
         id: responseData.user.id,
         name: responseData.user.name,
         email: responseData.user.email,
-        linkedInURL: responseData.user.linkedInURL || '',
-        phone: responseData.user.phone || '',
+        linkedInURL: responseData.user.linkedInURL || "",
+        phone: responseData.user.phone || "",
         role: responseData.user.role,
       });
 
@@ -61,10 +62,14 @@ const Login: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <div className="forgot-password-link">
+          <Link to="/forgot-password">Forgot Password?</Link>
+        </div>
         {error && <p className="error-message">{error}</p>}{" "}
         {/* Show error if login fails */}
         <button type="submit">Login</button>
       </form>
+
       <div className="register-link">
         Don't have an account? <Link to="/register">Register here</Link>
       </div>

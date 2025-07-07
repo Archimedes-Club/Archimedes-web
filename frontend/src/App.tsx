@@ -17,11 +17,12 @@ import { VerifyEmail } from "./components/VerifyEmail";
 import ProtectedRoute from "./ProtectedRoute";
 import ProjectDetail from "./components/ProjectDetail";
 import UserProfile from "./components/UserProfile";
+import ResetPassword from "./components/ResetPassword";
 
 const App: React.FC = () => {
-  useEffect(()=>{
-    document.title = "Archimedes Club"; 
-  },[])
+  useEffect(() => {
+    document.title = "Archimedes Club";
+  }, []);
   return (
     <Router>
       <Routes>
@@ -32,6 +33,14 @@ const App: React.FC = () => {
           element={
             <PublicRoute>
               <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ResetPassword />
             </PublicRoute>
           }
         />

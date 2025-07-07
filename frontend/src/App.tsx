@@ -23,7 +23,7 @@ const App: React.FC = () => {
     document.title = "Archimedes Club"; 
   },[])
   return (
-    <Router>
+    <Router basename="/archimedes">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Registration />} />

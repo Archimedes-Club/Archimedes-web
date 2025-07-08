@@ -13,8 +13,13 @@ class Project extends Model
         'description',
         'status',
         'category',
+        'is_public',
         'team_lead',
         'team_size'
+    ];
+
+    protected $casts = [
+        "is_public" => 'boolean'
     ];
     
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
@@ -28,5 +33,13 @@ class Project extends Model
                     ->withTimestamps()
                     ->withPivot('role', 'status', 'user_email')
                     ->using(ProjectMembership::class);
+    }
+
+    public function teamLead()
+    {
+        return $this->belongsToMany(User::class, 'project_memberships')
+                    ->wherePivot('role', 'lead')
+                    ->withPivot('role')
+                    ->withTimestamps();
     }
 }

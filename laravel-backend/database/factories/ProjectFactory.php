@@ -22,6 +22,7 @@ class ProjectFactory extends Factory
             'description' => fake()->sentence(),
             'status' => fake()->randomElement(["Deployed", "Ongoing", "Hiring"]),
             'category' => fake()->randomElement(["AI/ML", "Web", "IoT"]),
+            'is_public' => false,
             'team_size' => fake()->numberBetween(3,10),
             'team_lead' => fake() -> name()
         ];

@@ -22,9 +22,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::put('/user',[UserController::class, 'update']);
 
     Route::patch('/user',[UserController::class, 'update']);
-
     
-
     /**
      * Project Membership Routes
     */
@@ -59,6 +57,14 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'm
     Route::delete('/project_memberships', [ProjectMembershipController::class, 'removeUserFromProject']);
 });
 
+/**
+ * Route to get all public projects
+ */
+Route::get("/public-projects", [ProjectController::class, 'getPublicProjects']);
+
+/**
+ * Routes related to user auth
+ */
 Route::delete('/user', [UserController::class,'delete'])->middleware(['auth:sanctum']);
 
 Route::post('/logout',[AuthController::class, 'logout'])->middleware(['auth:sanctum']);
@@ -77,7 +83,9 @@ Route::get('/debug-session', function (Request $request) {
     ]);
 });
 
-
+Route::get('/ping', function(){
+    return "server up and running";
+});
 /**
  * Route to check if the user is logged in and has verified email
  */
@@ -94,7 +102,7 @@ Route::middleware('auth:sanctum')->get('/auth-status', function (Request $reques
 // This routes will get called once the user the verify user button in the email
 Route::get('/email/verify/{id}/{hash}', function ($id, $hash, EmailVerificationRequest $request) {
     $request->fulfill(); // marks the user as verified
-    return redirect("http://localhost:3000/login");
+    return redirect(env("FRONTEND_URL")+"/archimedes");
 })->middleware(['auth','signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
@@ -111,7 +119,7 @@ Route::post('/email/verification-notification', function (Request $request) {
  * ADMIN Routes
  */
 Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'auth.admin']], function(){
-    
+
     Route::get('/', function() {
         return "You're an Admin";
     });
@@ -119,9 +127,9 @@ Route::group(['prefix' => 'v1/admin', 'namespace' => 'App\Http\Controllers\Api\v
     Route::get('/users', [AdminController::class, 'getAllUsers']);
 
     Route::put('/users/{id}', [AdminController::class,'updateUser']);
-    
+
     Route::patch('/users/{id}', [AdminController::class,'updateUser']);
-    
+
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
 
     Route::get("/checkProfessorEmail", function(Request $request){

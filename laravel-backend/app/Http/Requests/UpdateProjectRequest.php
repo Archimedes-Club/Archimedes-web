@@ -30,6 +30,7 @@ class UpdateProjectRequest extends FormRequest
                 'description' => ['required', 'string'],
                 'status' => ['required', Rule::in(['Ongoing', 'Deployed', 'Hiring'])],
                 'category' => ['required', Rule::in(['AI/ML', 'Web', 'Research', 'IoT'])],
+                'is_public' => ['sometimes', 'boolean'],
                 'team_size' => ['required', 'integer', 'min:1', 'max:25'],
             ];
         }else{
@@ -39,6 +40,7 @@ class UpdateProjectRequest extends FormRequest
                 'description' => ['sometimes','required', 'string'],
                 'status' => ['sometimes','required', Rule::in(['Ongoing', 'Deployed', 'Hiring'])],
                 'category' => ['sometimes','required', Rule::in(['AI/ML', 'Web', 'Research', 'IoT'])],
+                'is_public' => ['sometimes', 'boolean'],
                 'team_size' => ['sometimes','required', 'integer', 'min:1', 'max:25'],
             ];
         }

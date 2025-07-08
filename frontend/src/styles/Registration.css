@@ -74,7 +74,9 @@
     background-color: #553c9a;
     transform: scale(1.02);
   }
-  
+  .registration-container button:disabled{
+    background-color: grey;
+  }
   .registration-container .error-message {
     color: #e53e3e;
     font-size: 12px;

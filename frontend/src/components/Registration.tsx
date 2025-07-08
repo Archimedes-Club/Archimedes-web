@@ -15,6 +15,7 @@ const Registration: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const [submitDisable, setSubDisable] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -64,6 +65,7 @@ const Registration: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setSubDisable(true);
     e.preventDefault();
 
     if (!validate()) {
@@ -77,10 +79,7 @@ const Registration: React.FC = () => {
 
       // const data = await response;
       localStorage.setItem("userRole", response?.data.role); // Store role (professor/student)
-      localStorage.setItem("userName", response?.data.name); // Store user name
-      localStorage.setItem("userPhone", response?.data.phone); // Store phone
-      localStorage.setItem("userLinkedin", response?.data.linkedin_url); // Store LinkedIn URL
-
+      
       alert("Registration successful!");
 
       await login(formData.email, formData.password);
@@ -90,6 +89,8 @@ const Registration: React.FC = () => {
     } catch (error) {
       console.error("Error registering:", error);
       alert(error);
+    }finally{
+      setSubDisable(false);
     }
   };
 
@@ -181,7 +182,7 @@ const Registration: React.FC = () => {
           )}
         </div>
 
-        <button type="submit">Register</button>
+        <button disabled={submitDisable}  type="submit">Register</button>
       </form>
 
       <div className="login-link">

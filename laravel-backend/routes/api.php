@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\v1\ProjectController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 // Routes that are allowed to Authenicated Users
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api\v1', 'middleware'=>['auth:sanctum', 'verified']], function(){
@@ -75,6 +77,15 @@ Route::post('/register',[AuthController::class, 'register']);
 // Login route
 Route::post('/login',[AuthController::class, 'login']);
 
+// Route to send forget password link to user's email
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+
+// Route to reset the password
+Route::post('/reset-password', [NewPasswordController::class, 'store']);
+
+/**
+ * Routes relatedd to session 
+ */
 // Route to check if the session data
 Route::get('/debug-session', function (Request $request) {
     return response()->json([

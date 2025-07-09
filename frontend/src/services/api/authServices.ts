@@ -136,3 +136,30 @@ export const emailVerification = async() =>{
     handleApiError(error);
   }
 }
+
+/**
+ * Send Reset password Email
+ */
+export const sendPasswordResetEmail = async(email) =>{
+  try {
+    const response = await api.post('api/forgot-password', {email});
+    return response;
+  } catch (error) {
+    handleApiError(error);
+  }
+}
+
+/**
+ * Reset Password (should be called once user is redirected from the email sent)
+ * @param email 
+ * @param token
+ * @param password
+ * @param password_confirmation
+ */
+export const restPassword = async (email, password, password_confirmation, token) =>{
+  try {
+    const response = await api.post('api/reset-password', {email, password, password_confirmation, token})
+  } catch (error) {
+    handleApiError(error)
+  }
+}

@@ -105,3 +105,15 @@ export const getProjectJoinRequests = async () => {
     }
   };
   
+
+  /**
+   * Get all public projects
+   */
+  export const getPublicProjects = async() => {
+    try {
+        const response = await api.get("/api/public-projects")
+        return response;
+    } catch (error) {
+        handleApiError(error);
+    }
+  }

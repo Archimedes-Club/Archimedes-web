@@ -74,13 +74,15 @@ class ProjectController extends Controller
             ->with(['teamLead' => function ($query) {
                 $query->select('users.id', 'users.name');
             }])
-            ->select('id', 'title', 'description')
+            ->select('id', 'title', 'description', 'category', 'status')
             ->get()
             ->map(function ($project) {
                 return [
                     'id' => $project->id,
                     'title' => $project->title,
                     'description' => $project->description,
+                    'category' => $project->category,
+                    'status' => $project->status,
                     'team_lead' => $project->teamLead->first()?->name ?? 'N/A',
                 ];
             });

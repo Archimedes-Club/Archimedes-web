@@ -34,6 +34,7 @@ class ProjectResource extends JsonResource
             'category' => $this->category,
             'team_lead' => $this->team_lead,
             'team_size' => $this->team_size,
+            'is_public' => $this->is_public,
             'summary' => "$this->title is lead by $this->team_lead",
             'membership' => $status,
         ];

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->string(column: 'status');
             $table->string('category');
+            $table->boolean('is_public')->default(false); # Determines if the project title and description can be visible to public
             $table->string('team_lead');
             $table->integer('team_size');
             $table->timestamps();

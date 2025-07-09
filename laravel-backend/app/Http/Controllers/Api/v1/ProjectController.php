@@ -8,11 +8,13 @@ use App\Http\Resources\v1\ProjectCollection;
 use App\Http\Resources\v1\ProjectResource;
 use App\Models\Project;
 use App\Http\Controllers\Controller;
+use App\Models\ProjectMembership;
 use Illuminate\Http\Request;
 
 
 class ProjectController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -20,7 +22,6 @@ class ProjectController extends Controller
     {
         return new ProjectCollection(Project::all());
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -64,6 +65,27 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
+    /**
+     * Get all public projects
+     */
+
+     public function getPublicProjects(){
+        $projects = Project::where('is_public', true)
+            ->with(['teamLead' => function ($query) {
+                $query->select('users.id', 'users.name');
+            }])
+            ->select('id', 'title', 'description')
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'id' => $project->id,
+                    'title' => $project->title,
+                    'description' => $project->description,
+                    'team_lead' => $project->teamLead->first()?->name ?? 'N/A',
+                ];
+            });
+        return $projects;
+     }
 
     /**
      * Update the specified resource in storage.
@@ -84,8 +106,6 @@ class ProjectController extends Controller
                 "message" => "You're not authorized to perform this action"
             ], 403);
         }
-
-
 
         $project = Project::find($id);
         

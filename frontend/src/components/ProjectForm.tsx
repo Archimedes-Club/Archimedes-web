@@ -121,7 +121,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         <option value="IoT">IoT</option>
       </select>
 
-      <label htmlFor="team_lead">Team Lead</label>
+      <label htmlFor="team_lead">Project Lead</label>
       <input
         type="text"
         id="team_lead"

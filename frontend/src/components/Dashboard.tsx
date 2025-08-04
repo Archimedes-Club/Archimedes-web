@@ -61,7 +61,10 @@ const Dashboard: React.FC = () => {
           setUserRole(userData.data.role || "student");
           setUserName(userData.data.name || "User");
           setUserId(userData.data.id);
-          setNewProject((prev) => ({ ...prev, team_lead: userData.data.name }));
+          setNewProject((prev) => ({
+            ...prev,
+            team_lead: userData.data.name,
+          }));
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
